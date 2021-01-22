@@ -16,9 +16,9 @@ for x in range(40): # Take steps
     if bottom_right_ir > 100 and bottom_left_ir > 100:
         heading = heading           # do nothing
     elif bottom_right_ir < 100:
-        heading += 10               # turn right
+        heading += 5               # turn left
     elif bottom_left_ir < 100:
-        heading -= 10               # turn left
+        heading -= 5               # turn right
     zumi.go_straight(speed, heading)
 
 zumi.stop()
