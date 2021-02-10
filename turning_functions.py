@@ -57,37 +57,46 @@ def turnRight():
         
         zumi.go_straight(20, heading)
         
-        if heading > -75:
-            heading -= 6
+        if heading > -79:
+            heading -= 4
             print("In Winkel")
         
         print(heading)
 
 
-        if heading < -71 and (bottom_left_ir > IRB or bottom_right_ir > IRB):
+        if heading < -75 and (bottom_left_ir > IRB or bottom_right_ir > IRB):
             zumi.stop()
             print("line follower")
             break
     print("leave")
-    for x in range (100):
+    counter = 0
+    lf = False
+    rf = False
+    for x in range (200):
         ir_readings = zumi.get_all_IR_data()
         bottom_right_ir = ir_readings[1]
         bottom_left_ir = ir_readings[3]
-        print("step")
+        print("step " + x)
         print(bottom_left_ir)
         print(bottom_right_ir)
         if bottom_right_ir > IRB and bottom_left_ir > IRB:
             heading = heading           # do nothing
+            lf = False
+            rf = False
             
-        elif bottom_left_ir < IRB and bottom_right_ir < IRB:
-            break
-        elif bottom_right_ir < IRB:
-            heading += 1              # turn left
-            
-        elif bottom_left_ir < IRB:
-            heading -= 1               # turn right
         
-        zumi.go_straight(20, heading)
+        elif bottom_right_ir < IRB and lf == False:
+            heading += (2 - counter *0.1)              # turn left
+            rf = True
+            
+        elif bottom_left_ir < IRB and rf == False:
+            heading -= (2 - counter * 0.1)               # turn right
+            lf = True 
+        
+        zumi.go_straight(10, heading)
+        if counter == 10:
+            print("leave be angle")
+            break
     
     zumi.stop()
 
