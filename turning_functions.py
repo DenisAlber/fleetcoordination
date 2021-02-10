@@ -49,7 +49,7 @@ def turnStraight(heading):
 def turnRight():
     zumi.calibrate_gyro()
     heading = 0
-    for x in range (300):
+    for x in range (1000):
 
         ir_readings = zumi.get_all_IR_data()
         bottom_right_ir = ir_readings[1]
@@ -57,22 +57,25 @@ def turnRight():
         
         zumi.go_straight(20, heading)
         
-        if heading > -71:
-            heading -= 4
+        if heading > -75:
+            heading -= 6
             print("In Winkel")
         
         print(heading)
 
 
-        if heading < -51 and (bottom_left_ir > IRB or bottom_right_ir > IRB):
+        if heading < -71 and (bottom_left_ir > IRB or bottom_right_ir > IRB):
             zumi.stop()
+            print("line follower")
             break
-
-    for x in range (40):
+    print("leave")
+    for x in range (100):
         ir_readings = zumi.get_all_IR_data()
         bottom_right_ir = ir_readings[1]
         bottom_left_ir = ir_readings[3]
-
+        print("step")
+        print(bottom_left_ir)
+        print(bottom_right_ir)
         if bottom_right_ir > IRB and bottom_left_ir > IRB:
             heading = heading           # do nothing
             
