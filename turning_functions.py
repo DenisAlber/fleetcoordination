@@ -57,7 +57,7 @@ def turnRight():
         
         zumi.go_straight(20, heading)
         
-        if heading > -79:
+        if heading > -73:
             heading -= 4
             print("In Winkel")
         
@@ -72,11 +72,11 @@ def turnRight():
     counter = 0
     lf = False
     rf = False
-    for x in range (200):
+    for x in range (35):
         ir_readings = zumi.get_all_IR_data()
         bottom_right_ir = ir_readings[1]
         bottom_left_ir = ir_readings[3]
-        print("step " + x)
+        print("step " + str(x))
         print(bottom_left_ir)
         print(bottom_right_ir)
         if bottom_right_ir > IRB and bottom_left_ir > IRB:
@@ -86,19 +86,23 @@ def turnRight():
             
         
         elif bottom_right_ir < IRB and lf == False:
-            heading += (2 - counter *0.1)              # turn left
+            heading += (3.5 - counter *0.1)              # turn left
             rf = True
+            counter = counter +1
             
         elif bottom_left_ir < IRB and rf == False:
-            heading -= (2 - counter * 0.1)               # turn right
+            heading -= (3.5 - counter * 0.1)               # turn right
             lf = True 
-        
+            counter = counter +1
+        print("counter" + str(counter))
         zumi.go_straight(10, heading)
-        if counter == 10:
+        """
+        if counter == 30:
             print("leave be angle")
             break
-    
+        """        
     zumi.stop()
+    return heading
 
 
 
@@ -154,7 +158,29 @@ for x in range(2000): # Take steps
     zumi.go_straight(speed, heading)
 
 zumi.stop()
-turnRight()
+heading = turnRight()
+
+for x in range(20): # Take steps
+    
+    ir_readings = zumi.get_all_IR_data()
+    bottom_right_ir = ir_readings[1]
+    bottom_left_ir = ir_readings[3]
+
+    if bottom_right_ir > IRB and bottom_left_ir > IRB:
+        heading = heading           # do nothing
+        
+    elif bottom_left_ir < IRB and bottom_right_ir < IRB:
+        print("raus bruder")
+        break
+    elif bottom_right_ir < IRB:
+        heading += 1              # turn left
+        
+    elif bottom_left_ir < IRB:
+        heading -= 1               # turn right
+        
+    
+    zumi.go_straight(speed, heading)
+zumi.stop()
 
 
 
