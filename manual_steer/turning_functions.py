@@ -6,7 +6,7 @@ zumi = Zumi()
 IRB = 120 #IR-Border, point where Black should begin
 
 def turnStraight():
-    zumi.calibrate_gyro()
+    zumi.reset_gyro()
     heading = 0
 
     for x in range (40):
