@@ -33,22 +33,43 @@ class Graph:
                         break
                 break
 
-    def CalculatePath(self, StartCrossingName, EndCrossingName):
+    def CalculatePath(self, startCrossingName, endCrossingName):
+        """
+            Kalkuliert den kürzesten Weg von dem eingegebenen Start- und Endpunkt
+        """
         for crossing in self.crossings:
             self.unvisited.append(crossing)
 
         for crossing in self.crossings:
-            if(crossing.crossingName == StartCrossingName):
+            if(crossing.crossingName == startCrossingName):
                 crossing.currentWeight = 0
                 crossing.precursor = crossing
+
                 self.Dijkstra(crossing)
-                path = self.GetPath(EndCrossingName)
+
+                path = self.GetPath(endCrossingName)
                 path.reverse()
+
+                self.ResetAllCrossingParameterForPathCalculation()
+
                 return path
-        
 
-
+    def ResetAllCrossingParameterForPathCalculation(self):
+        """
+            Setzt alle Parameter die für die Berechnung des kürzesten Pfades verwendet werden zurück, sodass
+            ein fehlerfreier weiterer Aufruf der Funktion CalculatePath gewährleistet ist.
+        """
+        for crossing in self.crossings:
+            crossing.precursor = None
+            crossing.currentWeight = float('inf')
+            self.visited = []
+            self.unvisited = []
+    
     def GetPath(self, crossingName):
+        """
+            Baut den Pfad vom Start- bis zum Endpunkt mit dem kürzesten weg auf und gibt diesen zurück
+            - Rekursiver Aufruf
+        """
         for crossing in self.crossings:
             if(crossing.crossingName == crossingName):
                 path = []
@@ -61,51 +82,46 @@ class Graph:
                 return path                    
     
     def Dijkstra(self, currentCrossing):
-        path = []
-        for reachablecrossing in currentCrossing.reachableCrossings:
+        """
+            Dijkstra Algorithmus - Rekursiver Aufruf
+        """
+        for reachableCrossing in currentCrossing.reachableCrossings:
 
-            if(self.IsCrossingAlreadyVisited(reachablecrossing)):
+            if(self.IsCrossingAlreadyVisited(reachableCrossing)):
                 continue
 
-            newWeight = currentCrossing.currentWeight + reachablecrossing.weight
+            newWeight = currentCrossing.currentWeight + reachableCrossing.weight
 
-            if reachablecrossing.crossing.currentWeight == float('inf'):
-                reachablecrossing.crossing.currentWeight = newWeight
-                reachablecrossing.crossing.precursor = currentCrossing
+            if reachableCrossing.crossing.currentWeight == float('inf'):
+                reachableCrossing.crossing.currentWeight = newWeight
+                reachableCrossing.crossing.precursor = currentCrossing
 
-            elif reachablecrossing.crossing.currentWeight >  newWeight:
-                reachablecrossing.crossing.currentWeight = newWeight
-                reachablecrossing.crossing.precursor = currentCrossing
+            elif reachableCrossing.crossing.currentWeight >  newWeight:
+                reachableCrossing.crossing.currentWeight = newWeight
+                reachableCrossing.crossing.precursor = currentCrossing
 
-#            elif reachablecrossing.crossing.currentWeight <  newWeight:
-#               continue
         self.visited.append(currentCrossing)
         self.unvisited.remove(currentCrossing)
 
         minValue = float('inf')
-        for reachablecrossing in self.unvisited:
-
-            #if(self.IsCrossingAlreadyVisited(reachablecrossing)):
-            #   continue
-
-            if(reachablecrossing.currentWeight < minValue):
-                minValue = reachablecrossing.currentWeight
-                nextCrossing = reachablecrossing
+        for reachableCrossing in self.unvisited:
+            if(reachableCrossing.currentWeight < minValue):
+                minValue = reachableCrossing.currentWeight
+                nextCrossing = reachableCrossing
 
         if len(self.unvisited) != 0:
             self.Dijkstra(nextCrossing)
 
-    def IsCrossingAlreadyVisited(self, reachablecrossing):
+    def IsCrossingAlreadyVisited(self, reachableCrossing):
+        """
+            Prüft ob Kreuzung vom Dijkstra Algorithmus bereits abgearbeitet wurde.
+        """
         if self.visited != None:
             for previousCrossing in self.visited:
-                if(reachablecrossing.crossing.crossingName == previousCrossing):
+                if(reachableCrossing.crossing.crossingName == previousCrossing):
                     return True
             return False
-            
-
-
-
-
+    
 
 class Crossing:
     def __init__(self, crossingName):
@@ -126,14 +142,14 @@ class Crossing:
         print('\tBenachbart Kreuzungen:', end=" ")
         print(Enumerable(self.reachableCrossings).select(lambda x: x.crossing.crossingName))
 
+
 class ReachableCrossing:
     def __init__(self, crossing, weight):
         self.crossing = crossing
         self.weight = weight
 
-
-    
-
+  
+# Main
 
 g = Graph()
 g.AddCrossing("S")
@@ -170,6 +186,9 @@ g.PrintAllCrossingNamesAndReachableCrossings()
 
 path = g.CalculatePath("S", "Z")
 print(path)
+path = g.CalculatePath("Z", "S")
+print(path)
+
 
 
 
