@@ -2,13 +2,14 @@ from py_linq import Enumerable
 
 class Graph:
     crossings = []
+    dijkstraPath = []
         
     def AddCrossing(self, crossingName):
         self.crossings.append(Crossing(crossingName))
 
     def PrintAllCrossingNamesAndReachableCrossings(self):
         for x in self.crossings:
-            print("Knoten: " + x.crossingName)
+            print("Kreuzung: " + x.crossingName)
             x.PrintReachableCrossings()
         
 
@@ -30,6 +31,69 @@ class Graph:
                         o.AddReachableCrossing(x, weight)
                         break
                 break
+
+    def CalculatePath(self, StartCrossingName, EndCrossingName):
+        for crossing in self.crossings:
+            if(crossing.crossingName == StartCrossingName):
+                crossing.currentWeight = 0
+
+                previousCrossings = []
+                previousCrossings.append(crossing.crossingName)
+
+                path = self.Dijkstra(previousCrossings, crossing, EndCrossingName)
+                return path
+
+    
+    def Dijkstra(self, previousCrossings, currentCrossing, EndCrossingName):
+        path = []
+        path.append(currentCrossing.crossingName)
+
+        for reachablecrossing in currentCrossing.reachableCrossings:
+
+            if(self.IsCrossingAlreadyVisited(previousCrossings, reachablecrossing)):
+                continue
+
+            newWeight = currentCrossing.currentWeight + reachablecrossing.weight
+
+            if reachablecrossing.crossing.currentWeight == float('inf'):
+                reachablecrossing.crossing.currentWeight = newWeight
+
+            elif reachablecrossing.crossing.currentWeight >  newWeight:
+                reachablecrossing.crossing.currentWeight = newWeight
+
+#            elif reachablecrossing.crossing.currentWeight <  newWeight:
+#               continue
+
+
+        minValue = float('inf')
+        for reachablecrossing in currentCrossing.reachableCrossings:
+
+            if(self.IsCrossingAlreadyVisited(previousCrossings, reachablecrossing)):
+                continue
+
+            
+            previousCrossings.append(reachablecrossing.crossing.crossingName)
+
+            if(reachablecrossing.crossing.currentWeight < minValue):
+                minValue = reachablecrossing.crossing.currentWeight
+                nextCrossing = reachablecrossing
+
+        if(nextCrossing.crossing.crossingName != EndCrossingName):
+            path.extend(self.Dijkstra(previousCrossings, nextCrossing.crossing, EndCrossingName))
+            return path
+        else:
+            path.append(nextCrossing.crossing.crossingName)
+            return path
+
+    def IsCrossingAlreadyVisited(self, previousCrossings, reachablecrossing):
+        if previousCrossings != None:
+            for previousCrossing in previousCrossings:
+                if(reachablecrossing.crossing.crossingName == previousCrossing):
+                    return True
+            return False
+            
+
+
 
 
 
@@ -92,6 +156,9 @@ g.AddReachableCrossingToCrossing("E", "Z", 7, False)
 g.AddReachableCrossingToCrossing("F", "Z", 11, False)
 
 g.PrintAllCrossingNamesAndReachableCrossings()
+
+path = g.CalculatePath("S", "Z")
+print(path)
 
 
 
