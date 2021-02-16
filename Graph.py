@@ -2,7 +2,8 @@ from py_linq import Enumerable
 
 class Graph:
     crossings = []
-    dijkstraPath = []
+    visited = []
+    unvisited = []
         
     def AddCrossing(self, crossingName):
         self.crossings.append(Crossing(crossingName))
@@ -34,60 +35,69 @@ class Graph:
 
     def CalculatePath(self, StartCrossingName, EndCrossingName):
         for crossing in self.crossings:
+            self.unvisited.append(crossing)
+
+        for crossing in self.crossings:
             if(crossing.crossingName == StartCrossingName):
                 crossing.currentWeight = 0
-
-                previousCrossings = []
-                previousCrossings.append(crossing.crossingName)
-
-                path = self.Dijkstra(previousCrossings, crossing, EndCrossingName)
+                crossing.precursor = crossing
+                self.Dijkstra(crossing)
+                path = self.GetPath(EndCrossingName)
+                path.reverse()
                 return path
+        
 
+
+    def GetPath(self, crossingName):
+        for crossing in self.crossings:
+            if(crossing.crossingName == crossingName):
+                path = []
+                path.extend(crossing.crossingName)
+
+                if(crossing.crossingName == crossing.precursor.crossingName):
+                    return path
+                
+                path.extend(self.GetPath(crossing.precursor.crossingName))
+                return path                    
     
-    def Dijkstra(self, previousCrossings, currentCrossing, EndCrossingName):
+    def Dijkstra(self, currentCrossing):
         path = []
-        path.append(currentCrossing.crossingName)
-
         for reachablecrossing in currentCrossing.reachableCrossings:
 
-            if(self.IsCrossingAlreadyVisited(previousCrossings, reachablecrossing)):
+            if(self.IsCrossingAlreadyVisited(reachablecrossing)):
                 continue
 
             newWeight = currentCrossing.currentWeight + reachablecrossing.weight
 
             if reachablecrossing.crossing.currentWeight == float('inf'):
                 reachablecrossing.crossing.currentWeight = newWeight
+                reachablecrossing.crossing.precursor = currentCrossing
 
             elif reachablecrossing.crossing.currentWeight >  newWeight:
                 reachablecrossing.crossing.currentWeight = newWeight
+                reachablecrossing.crossing.precursor = currentCrossing
 
 #            elif reachablecrossing.crossing.currentWeight <  newWeight:
 #               continue
-
+        self.visited.append(currentCrossing)
+        self.unvisited.remove(currentCrossing)
 
         minValue = float('inf')
-        for reachablecrossing in currentCrossing.reachableCrossings:
+        for reachablecrossing in self.unvisited:
 
-            if(self.IsCrossingAlreadyVisited(previousCrossings, reachablecrossing)):
-                continue
+            #if(self.IsCrossingAlreadyVisited(reachablecrossing)):
+            #   continue
 
-            
-            previousCrossings.append(reachablecrossing.crossing.crossingName)
-
-            if(reachablecrossing.crossing.currentWeight < minValue):
-                minValue = reachablecrossing.crossing.currentWeight
+            if(reachablecrossing.currentWeight < minValue):
+                minValue = reachablecrossing.currentWeight
                 nextCrossing = reachablecrossing
 
-        if(nextCrossing.crossing.crossingName != EndCrossingName):
-            path.extend(self.Dijkstra(previousCrossings, nextCrossing.crossing, EndCrossingName))
-            return path
-        else:
-            path.append(nextCrossing.crossing.crossingName)
-            return path
+        if len(self.unvisited) != 0:
+            self.Dijkstra(nextCrossing)
 
-    def IsCrossingAlreadyVisited(self, previousCrossings, reachablecrossing):
-        if previousCrossings != None:
-            for previousCrossing in previousCrossings:
+    def IsCrossingAlreadyVisited(self, reachablecrossing):
+        if self.visited != None:
+            for previousCrossing in self.visited:
                 if(reachablecrossing.crossing.crossingName == previousCrossing):
                     return True
             return False
@@ -102,6 +112,7 @@ class Crossing:
         self.crossingName = crossingName
         self.reachableCrossings = []
         self.currentWeight = float('inf')
+        self.precursor = None
 
     def AddReachableCrossing(self, crossing, weight):
         # check if neighbor already exists
