@@ -1,4 +1,5 @@
 from py_linq import Enumerable
+import enum
 
 class Graph:
     crossings = []
@@ -14,7 +15,7 @@ class Graph:
             x.PrintReachableCrossings()
         
 
-    def AddReachableCrossingToCrossing(self, crossingName, neighborCrossingName, weight, isOneWayStreet):
+    def AddReachableCrossingToCrossing(self, crossingName, neighborCrossingName, weight, isOneWayStreet, direction):
         """
             Fügt eine Kreuzung zur Liste mit den benachbarten Kreuzungen hinzu.
             
@@ -26,10 +27,10 @@ class Graph:
             if x.crossingName == crossingName:
                 for o in self.crossings:
                     if o.crossingName == neighborCrossingName:
-                        x.AddReachableCrossing(o, weight)
+                        x.AddReachableCrossing(o, weight, direction)
                         if isOneWayStreet == True: 
                             return
-                        o.AddReachableCrossing(x, weight)
+                        o.AddReachableCrossing(x, weight, direction)
                         break
                 break
 
@@ -73,11 +74,19 @@ class Graph:
         for crossing in self.crossings:
             if(crossing.crossingName == crossingName):
                 path = []
-                path.extend(crossing.crossingName)
 
                 if(crossing.crossingName == crossing.precursor.crossingName):
                     return path
-                
+
+                for x in crossing.precursor.reachableCrossings:
+                    if(x.crossing == crossing):
+                        thisdict = {
+                            "currentCrossing": crossing.precursor.crossingName,
+                            "direction": x.direction.name,
+                            "nextCrossing": x.crossing.crossingName
+                        }
+                        path.append(thisdict)
+
                 path.extend(self.GetPath(crossing.precursor.crossingName))
                 return path                    
     
@@ -130,13 +139,13 @@ class Crossing:
         self.currentWeight = float('inf')
         self.precursor = None
 
-    def AddReachableCrossing(self, crossing, weight):
+    def AddReachableCrossing(self, crossing, weight, direction):
         # check if neighbor already exists
         for x in self.reachableCrossings:
             if(x.crossing == crossing):
                 return
         # add neighbor to crossing
-        self.reachableCrossings.append(ReachableCrossing(crossing, weight))
+        self.reachableCrossings.append(ReachableCrossing(crossing, weight, direction))
     
     def PrintReachableCrossings(self):
         print('\tBenachbart Kreuzungen:', end=" ")
@@ -144,10 +153,15 @@ class Crossing:
 
 
 class ReachableCrossing:
-    def __init__(self, crossing, weight):
+    def __init__(self, crossing, weight, direction):
         self.crossing = crossing
         self.weight = weight
+        self.direction = direction 
 
+class Direction(enum.Enum):
+    TurnLeft = 1
+    TurnRight = 2
+    GoStraight = 3
   
 # Main
 
@@ -162,25 +176,25 @@ g.AddCrossing("E")
 g.AddCrossing("F")
 g.AddCrossing("Z")
 
-g.AddReachableCrossingToCrossing("S", "A", 5, False)
-g.AddReachableCrossingToCrossing("S", "B", 2, False)
-g.AddReachableCrossingToCrossing("S", "G", 4, False)
+g.AddReachableCrossingToCrossing("S", "A", 5, False, Direction.TurnLeft)
+g.AddReachableCrossingToCrossing("S", "B", 2, False, Direction.GoStraight)
+g.AddReachableCrossingToCrossing("S", "G", 4, False, Direction.TurnRight)
 
-g.AddReachableCrossingToCrossing("A", "B", 1, False)
-g.AddReachableCrossingToCrossing("A", "C", 3, False)
+g.AddReachableCrossingToCrossing("A", "B", 1, False, Direction.TurnRight)
+g.AddReachableCrossingToCrossing("A", "C", 3, False, Direction.TurnLeft)
 
-g.AddReachableCrossingToCrossing("B", "C", 8, False)
+g.AddReachableCrossingToCrossing("B", "C", 8, False, Direction.GoStraight)
 
-g.AddReachableCrossingToCrossing("G", "D", 2, False)
+g.AddReachableCrossingToCrossing("G", "D", 2, False, Direction.TurnRight)
 
-g.AddReachableCrossingToCrossing("C", "D", 4, False)
-g.AddReachableCrossingToCrossing("C", "E", 6, False)
+g.AddReachableCrossingToCrossing("C", "D", 4, False, Direction.TurnLeft)
+g.AddReachableCrossingToCrossing("C", "E", 6, False, Direction.GoStraight)
 
-g.AddReachableCrossingToCrossing("D", "E", 10, False)
-g.AddReachableCrossingToCrossing("D", "F", 8, False)
+g.AddReachableCrossingToCrossing("D", "E", 10, False, Direction.TurnRight)
+g.AddReachableCrossingToCrossing("D", "F", 8, False, Direction.TurnLeft)
 
-g.AddReachableCrossingToCrossing("E", "Z", 7, False)
-g.AddReachableCrossingToCrossing("F", "Z", 11, False)
+g.AddReachableCrossingToCrossing("E", "Z", 7, False, Direction.GoStraight)
+g.AddReachableCrossingToCrossing("F", "Z", 11, False, Direction.TurnRight)
 
 g.PrintAllCrossingNamesAndReachableCrossings()
 
