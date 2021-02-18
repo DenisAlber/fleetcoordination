@@ -30,6 +30,15 @@ class Graph:
                         x.AddReachableCrossing(o, weight, direction)
                         if isOneWayStreet == True: 
                             return
+                        if direction == Direction.North:
+                            direction = Direction.South
+                        elif direction == Direction.South:
+                            direction = Direction.North
+                        elif direction == Direction.West:
+                            direction = Direction.East
+                        elif direction == Direction.East:
+                            direction = Direction.West
+                        
                         o.AddReachableCrossing(x, weight, direction)
                         break
                 break
@@ -159,9 +168,10 @@ class ReachableCrossing:
         self.direction = direction 
 
 class Direction(enum.Enum):
-    TurnLeft = 1
-    TurnRight = 2
-    GoStraight = 3
+    North = 1
+    East = 2
+    South = 3
+    West = 4
   
 # Main
 
@@ -176,25 +186,25 @@ g.AddCrossing("E")
 g.AddCrossing("F")
 g.AddCrossing("Z")
 
-g.AddReachableCrossingToCrossing("S", "A", 5, False, Direction.TurnLeft)
-g.AddReachableCrossingToCrossing("S", "B", 2, False, Direction.GoStraight)
-g.AddReachableCrossingToCrossing("S", "G", 4, False, Direction.TurnRight)
+g.AddReachableCrossingToCrossing("S", "A", 5, False, Direction.North)
+g.AddReachableCrossingToCrossing("S", "B", 2, False, Direction.South)
+g.AddReachableCrossingToCrossing("S", "G", 4, False, Direction.East)
 
-g.AddReachableCrossingToCrossing("A", "B", 1, False, Direction.TurnRight)
-g.AddReachableCrossingToCrossing("A", "C", 3, False, Direction.TurnLeft)
+g.AddReachableCrossingToCrossing("A", "B", 1, False, Direction.East)
+g.AddReachableCrossingToCrossing("A", "C", 3, False, Direction.North)
 
-g.AddReachableCrossingToCrossing("B", "C", 8, False, Direction.GoStraight)
+g.AddReachableCrossingToCrossing("B", "C", 8, False, Direction.South)
 
-g.AddReachableCrossingToCrossing("G", "D", 2, False, Direction.TurnRight)
+g.AddReachableCrossingToCrossing("G", "D", 2, False, Direction.East)
 
-g.AddReachableCrossingToCrossing("C", "D", 4, False, Direction.TurnLeft)
-g.AddReachableCrossingToCrossing("C", "E", 6, False, Direction.GoStraight)
+g.AddReachableCrossingToCrossing("C", "D", 4, False, Direction.North)
+g.AddReachableCrossingToCrossing("C", "E", 6, False, Direction.South)
 
-g.AddReachableCrossingToCrossing("D", "E", 10, False, Direction.TurnRight)
-g.AddReachableCrossingToCrossing("D", "F", 8, False, Direction.TurnLeft)
+g.AddReachableCrossingToCrossing("D", "E", 10, False, Direction.East)
+g.AddReachableCrossingToCrossing("D", "F", 8, False, Direction.North)
 
-g.AddReachableCrossingToCrossing("E", "Z", 7, False, Direction.GoStraight)
-g.AddReachableCrossingToCrossing("F", "Z", 11, False, Direction.TurnRight)
+g.AddReachableCrossingToCrossing("E", "Z", 7, False, Direction.South)
+g.AddReachableCrossingToCrossing("F", "Z", 11, False, Direction.East)
 
 g.PrintAllCrossingNamesAndReachableCrossings()
 
