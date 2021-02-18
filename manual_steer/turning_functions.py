@@ -72,7 +72,7 @@ def turnRight():
     counter = 0
     lf = False
     rf = False
-    for x in range (20):
+    for x in range (20):  #bisheriges optimum 34 steps
         ir_readings = zumi.get_all_IR_data()
         bottom_right_ir = ir_readings[1]
         bottom_left_ir = ir_readings[3]
