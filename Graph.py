@@ -173,45 +173,12 @@ class Direction(enum.Enum):
     South = 3
     West = 4
   
-# Main
 
-g = Graph()
-g.AddCrossing("S")
-g.AddCrossing("A")
-g.AddCrossing("B")
-g.AddCrossing("G")
-g.AddCrossing("C")
-g.AddCrossing("D")
-g.AddCrossing("E")
-g.AddCrossing("F")
-g.AddCrossing("Z")
 
-g.AddReachableCrossingToCrossing("S", "A", 5, False, Direction.North)
-g.AddReachableCrossingToCrossing("S", "B", 2, False, Direction.South)
-g.AddReachableCrossingToCrossing("S", "G", 4, False, Direction.East)
-
-g.AddReachableCrossingToCrossing("A", "B", 1, False, Direction.East)
-g.AddReachableCrossingToCrossing("A", "C", 3, False, Direction.North)
-
-g.AddReachableCrossingToCrossing("B", "C", 8, False, Direction.South)
-
-g.AddReachableCrossingToCrossing("G", "D", 2, False, Direction.East)
-
-g.AddReachableCrossingToCrossing("C", "D", 4, False, Direction.North)
-g.AddReachableCrossingToCrossing("C", "E", 6, False, Direction.South)
-
-g.AddReachableCrossingToCrossing("D", "E", 10, False, Direction.East)
-g.AddReachableCrossingToCrossing("D", "F", 8, False, Direction.North)
-
-g.AddReachableCrossingToCrossing("E", "Z", 7, False, Direction.South)
-g.AddReachableCrossingToCrossing("F", "Z", 11, False, Direction.East)
-
-g.PrintAllCrossingNamesAndReachableCrossings()
-
-path = g.CalculatePath("S", "Z")
-print(path)
-path = g.CalculatePath("Z", "S")
-print(path)
+# path = g.CalculatePath("S", "Z")
+# print(path)
+# path = g.CalculatePath("Z", "S")
+# print(path)
 
 
 
