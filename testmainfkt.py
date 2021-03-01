@@ -1,9 +1,9 @@
 #from zumi.zumi import Zumi
 import time
-import Graph as gr
+from Graph_Library import Graph as gr
 import personalmap as pm
 
-zumimap = gr.Graph()
+zumimap = gr()
 
 zumimap = pm.initPersonalMap(zumimap)
-zumimap.PrintAllCrossingNamesAndReachableCrossings
+zumimap.PrintAllCrossingNamesAndReachableCrossings()

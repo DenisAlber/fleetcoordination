@@ -1,5 +1,5 @@
 #from zumi.zumi import Zumi
-import Graph as gr
+from Graph_Library import Direction as direction
 
 def initPersonalMap(graph):
     graph.AddCrossing("S")
@@ -12,24 +12,24 @@ def initPersonalMap(graph):
     graph.AddCrossing("F")
     graph.AddCrossing("Z")
 
-    graph.AddReachableCrossingToCrossing("S", "A", 5, False, gr.Direction.North)
-    graph.AddReachableCrossingToCrossing("S", "B", 2, False, gr.Direction.South)
-    graph.AddReachableCrossingToCrossing("S", "G", 4, False, gr.Direction.East)
+    graph.AddReachableCrossingToCrossing("S", "A", 5, False, direction.North)
+    graph.AddReachableCrossingToCrossing("S", "B", 2, False, direction.South)
+    graph.AddReachableCrossingToCrossing("S", "G", 4, False, direction.East)
 
-    graph.AddReachableCrossingToCrossing("A", "B", 1, False, gr.Direction.East)
-    graph.AddReachableCrossingToCrossing("A", "C", 3, False, gr.Direction.North)
+    graph.AddReachableCrossingToCrossing("A", "B", 1, False, direction.East)
+    graph.AddReachableCrossingToCrossing("A", "C", 3, False, direction.North)
 
-    graph.AddReachableCrossingToCrossing("B", "C", 8, False, gr.Direction.South)
+    graph.AddReachableCrossingToCrossing("B", "C", 8, False, direction.South)
 
-    graph.AddReachableCrossingToCrossing("G", "D", 2, False, gr.Direction.East)
+    graph.AddReachableCrossingToCrossing("G", "D", 2, False, direction.East)
 
-    graph.AddReachableCrossingToCrossing("C", "D", 4, False, gr.Direction.North)
-    graph.AddReachableCrossingToCrossing("C", "E", 6, False, gr.Direction.South)
+    graph.AddReachableCrossingToCrossing("C", "D", 4, False, direction.North)
+    graph.AddReachableCrossingToCrossing("C", "E", 6, False, direction.South)
 
-    graph.AddReachableCrossingToCrossing("D", "E", 10, False, gr.Direction.East)
-    graph.AddReachableCrossingToCrossing("D", "F", 8, False, gr.Direction.North)
+    graph.AddReachableCrossingToCrossing("D", "E", 10, False, direction.East)
+    graph.AddReachableCrossingToCrossing("D", "F", 8, False, direction.North)
 
-    graph.AddReachableCrossingToCrossing("E", "Z", 7, False, gr.Direction.South)
-    graph.AddReachableCrossingToCrossing("F", "Z", 11, False, gr.Direction.East)
+    graph.AddReachableCrossingToCrossing("E", "Z", 7, False, direction.South)
+    graph.AddReachableCrossingToCrossing("F", "Z", 11, False, direction.East)
 
     return graph
