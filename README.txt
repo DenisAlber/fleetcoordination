@@ -4,4 +4,5 @@
 4. Unter Terminal -> New Terminal neues Terminal öffnen.
 5. Wenn ein Error im neuen Terminal erscheint: Windows PowerShell als Admin starten -> "Set-ExecutionPolicy Unrestricted" eingeben und mit "y" bestätigen
 6. VS Code neu starten, nochmals den Interpreter in Punkt 3 auswählen und neues Terminal starten (Fehler dürfte nun nicht mehr erscheinen)
-7. Testen ob alles funktioniert
+7. Im Terminal müsste nun vor dem Pfad "(.venv)" in grüner Schrift stehen. Jetzt noch mit "py -m pip install py-linq" py-linq darin installieren
+8. Testen ob alles funktioniert, wenn im das Module "six" fehlt einfach noch mit "py -m pip install six" installieren
