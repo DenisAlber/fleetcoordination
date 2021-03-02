@@ -4,4 +4,4 @@
 *.venv
 *.vscode
 *__pycache__
-*personalmap
+*personalmap.py
