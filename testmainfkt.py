@@ -7,13 +7,13 @@ import turning_functions as tf
 zumi = Zumi()
 
 IRB = 120
-heading = 0
+
 
 def drivethere(startdirection,startCrossing,EndCrossing,graph):
     path = graph.CalculatePath(startCrossing,EndCrossing)
     currentheading = startdirection
     heading = 0
-    speed = 0
+    speed = 30
     while len(path) != 0:
         for x in range(2000): # Take steps
         
@@ -27,21 +27,30 @@ def drivethere(startdirection,startCrossing,EndCrossing,graph):
             elif bottom_left_ir < IRB and bottom_right_ir < IRB:
                 break
             elif bottom_right_ir < IRB:
-                heading += 1              # turn left
+                heading += 0.5              # turn left
                 
             elif bottom_left_ir < IRB:
-                heading -= 1               # turn right
+                heading -= 0.5               # turn right
                 
             
             zumi.go_straight(speed, heading)
         zumi.stop()
+        print("off")
+        print("bheading: " + str(heading))
+        print("bGyro: " + str(zumi.read_z_angle()))
+        direc = str(input())
+        
         if currentheading == 'North' and path[0]['direction'] == 'West' or currentheading == 'East' and path[0]['direction'] == 'North' or currentheading == 'South' and path[0]['direction'] == 'East'or currentheading == 'West' and path[0]['direction'] == 'South':
             tf.turnLeft()
+            print("left")
         elif currentheading == path[0]['direction']:
-            tf.go_straight()
+            tf.turnStraight()
+            print("straight")
         elif currentheading == 'North' and path[0]['direction'] == 'East' or currentheading == 'East' and path[0]['direction'] == 'South' or currentheading == 'South' and path[0]['direction'] == 'West' or currentheading == 'West' and path[0]['direction'] == 'North':
             tf.turnRight()
-        
+        print("aheading: " + str(heading))
+        print("aGyro: " + str(zumi.read_z_angle()))
+        currentheading = path[0]['direction']
         path.pop(0)
 
 

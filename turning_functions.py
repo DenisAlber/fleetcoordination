@@ -6,7 +6,7 @@ zumi = Zumi()
 IRB = 120 #IR-Border, point where Black should begin
 
 def turnStraight():
-    zumi.calibrate_gyro()
+    zumi.reset_gyro()
     heading = 0
 
     for x in range (40):
@@ -39,8 +39,10 @@ def turnStraight():
             
         
         zumi.go_straight(20, heading)
-        print(x)
+        
     zumi.stop()
+    print("heading: " + str(heading))
+    print("Gyro: " + str(zumi.read_z_angle()))
     return heading
 
             
@@ -48,8 +50,9 @@ def turnStraight():
 
 
 def turnRight():
-    zumi.calibrate_gyro()
+    zumi.reset_gyro()
     heading = 0
+    
     for x in range (1000):
 
         ir_readings = zumi.get_all_IR_data()
@@ -60,26 +63,22 @@ def turnRight():
         
         if heading > -73:
             heading -= 4
-            print("In Winkel")
-        
-        print(heading)
+          
 
 
         if heading < -75 and (bottom_left_ir > IRB or bottom_right_ir > IRB):
             zumi.stop()
-            print("line follower")
+            
             break
-    print("leave")
+    
     counter = 0
     lf = False
     rf = False
-    for x in range (35):
+    for x in range (35):  #bisheriges optimum 34 steps
         ir_readings = zumi.get_all_IR_data()
         bottom_right_ir = ir_readings[1]
         bottom_left_ir = ir_readings[3]
-        print("step " + str(x))
-        print(bottom_left_ir)
-        print(bottom_right_ir)
+      
         if bottom_right_ir > IRB and bottom_left_ir > IRB:
             heading = heading           # do nothing
             lf = False
@@ -95,21 +94,19 @@ def turnRight():
             heading -= (3.5 - counter * 0.1)               # turn right
             lf = True 
             counter = counter +1
-        print("counter" + str(counter))
+       
         zumi.go_straight(10, heading)
-        """
-        if counter == 30:
-            print("leave be angle")
-            break
-        """        
+            
     zumi.stop()
+    print("heading: " + str(heading))
+    print("Gyro: " + str(zumi.read_z_angle()))
     return heading
 
 
 
 def turnLeft():
 
-    zumi.calibrate_gyro()
+    zumi.reset_gyro()
     heading = 0
     
     
@@ -152,14 +149,12 @@ def turnLeft():
         
         if heading < 73:
             heading += 4
-            print("In Winkel")
-        
-        print(heading)
+            
 
 
         if heading > 73 and (bottom_left_ir > IRB or bottom_right_ir > IRB):
             zumi.stop()
-            print("line follower")
+         
             break
     counter = 0
     lf = False
@@ -168,9 +163,7 @@ def turnLeft():
         ir_readings = zumi.get_all_IR_data()
         bottom_right_ir = ir_readings[1]
         bottom_left_ir = ir_readings[3]
-        print("step " + str(x))
-        print(bottom_left_ir)
-        print(bottom_right_ir)
+        
         if bottom_right_ir > IRB and bottom_left_ir > IRB:
             heading = heading           # do nothing
             lf = False
@@ -186,8 +179,12 @@ def turnLeft():
             heading -= (3.5 - counter * 0.1)               # turn right
             lf = True 
             counter = counter +1
-        print("counter" + str(counter))
+        
         zumi.go_straight(10, heading)
+    zumi.stop()
+    print("heading: " + str(heading))
+    print("Gyro: " + str(zumi.read_z_angle()))
+    return heading
         
     
 
@@ -196,58 +193,6 @@ def turnLeft():
 
 
 
-
-
-zumi.reset_gyro()
-speed = 30
-heading = 0
-
-for x in range(2000): # Take steps
-    
-    ir_readings = zumi.get_all_IR_data()
-    bottom_right_ir = ir_readings[1]
-    bottom_left_ir = ir_readings[3]
-
-    if bottom_right_ir > IRB and bottom_left_ir > IRB:
-        heading = heading           # do nothing
-        
-    elif bottom_left_ir < IRB and bottom_right_ir < IRB:
-        break
-    elif bottom_right_ir < IRB:
-        heading += 1              # turn left
-        
-    elif bottom_left_ir < IRB:
-        heading -= 1               # turn right
-        
-    
-    zumi.go_straight(speed, heading)
-
-zumi.stop()
-heading = turnLeft()
-zumi.stop()
-"""
-for x in range(40): # Take steps
-    
-    ir_readings = zumi.get_all_IR_data()
-    bottom_right_ir = ir_readings[1]
-    bottom_left_ir = ir_readings[3]
-
-    if bottom_right_ir > IRB and bottom_left_ir > IRB:
-        heading = heading           # do nothing
-        
-    elif bottom_left_ir < IRB and bottom_right_ir < IRB:
-        print("raus bruder")
-        break
-    elif bottom_right_ir < IRB:
-        heading += 1              # turn left
-        
-    elif bottom_left_ir < IRB:
-        heading -= 1               # turn right
-        
-    
-    zumi.go_straight(speed, heading)
-zumi.stop()
-"""
 
 
 
