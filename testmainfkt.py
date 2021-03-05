@@ -48,6 +48,8 @@ def drivethere(startdirection,startCrossing,EndCrossing,graph):
             print("straight")
         elif currentheading == 'North' and path[0]['direction'] == 'East' or currentheading == 'East' and path[0]['direction'] == 'South' or currentheading == 'South' and path[0]['direction'] == 'West' or currentheading == 'West' and path[0]['direction'] == 'North':
             tf.turnRight()
+        elif currentheading == 'North' and path[0]['direction'] == 'South' or currentheading == 'East' and path[0]['direction'] == 'West' or currentheading == 'South' and path[0]['direction'] == 'North' or currentheading == 'West' and path[0]['direction'] == 'East':
+            tf.turnAround()
         print("aheading: " + str(heading))
         print("aGyro: " + str(zumi.read_z_angle()))
         currentheading = path[0]['direction']
