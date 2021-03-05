@@ -1,8 +1,9 @@
 from zumi.zumi import Zumi
 import time
+from zumi.util.screen import Screen
 
 zumi = Zumi()
-
+screen=Screen()
 IRB = 120 #IR-Border, point where Black should begin
 
 def turnStraight():
@@ -45,6 +46,28 @@ def turnStraight():
     print("Gyro: " + str(zumi.read_z_angle()))
     return heading
 
+def fixZumiPosition(lastCrossing,nextCrossing):
+    for x in range(5):
+        zumi.play_note(30+x, note_duration=100)
+        time.sleep(0.1)
+    screen.clear_display()
+    for x in range(15):
+
+        if lastCrossing != None:
+            screen.draw_text("Relocate between "+lastCrossing+ " and "+nextCrossing+" in " + str(15-x)+"s")
+        elif lastCrossing == None:
+            screen.draw_text("Place Zumi at    Start in "+ str(15-x) + "s")
+        time.sleep(1.0)
+        
+    screen.clear_display()
+    ir_readings = zumi.get_all_IR_data()
+    bottom_right_ir = ir_readings[1]
+    bottom_left_ir = ir_readings[3]
+
+    if bottom_right_ir > IRB or bottom_left_ir > IRB:
+        return True
+    else:
+        return False
             
 def turnAround():
     zumi.reset_gyro()
@@ -107,7 +130,7 @@ def turnRight():
     counter = 0
     lf = False
     rf = False
-    for x in range (35):  #bisheriges optimum 34 steps
+    for x in range (34):  #bisheriges optimum 34 steps
         ir_readings = zumi.get_all_IR_data()
         bottom_right_ir = ir_readings[1]
         bottom_left_ir = ir_readings[3]
@@ -154,7 +177,7 @@ def turnLeft():
         if bottom_left_ir > IRB or bottom_right_ir > IRB:
             break
 
-    for x in range(16):
+    for x in range(34):
         ir_readings = zumi.get_all_IR_data()
         bottom_right_ir = ir_readings[1]
         bottom_left_ir = ir_readings[3]
@@ -192,7 +215,7 @@ def turnLeft():
     counter = 0
     lf = False
     rf = False
-    for x in range (35):
+    for x in range (34):
         ir_readings = zumi.get_all_IR_data()
         bottom_right_ir = ir_readings[1]
         bottom_left_ir = ir_readings[3]

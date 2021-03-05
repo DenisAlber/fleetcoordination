@@ -3,9 +3,10 @@ import time
 import Graph_Library as gr
 import personalmap as pm
 import turning_functions as tf
+from zumi.util.screen import Screen
 
 zumi = Zumi()
-
+screen=Screen()
 IRB = 120
 
 
@@ -14,6 +15,9 @@ def drivethere(startdirection,startCrossing,EndCrossing,graph):
     currentheading = startdirection
     heading = 0
     speed = 30
+    lastCrossing = None
+    nextCrossing = None
+    
     while len(path) != 0:
         for x in range(2000): # Take steps
         
@@ -24,8 +28,22 @@ def drivethere(startdirection,startCrossing,EndCrossing,graph):
             if bottom_right_ir > IRB and bottom_left_ir > IRB:
                 heading = heading           # do nothing
                 
-            elif bottom_left_ir < IRB and bottom_right_ir < IRB:
+            elif bottom_left_ir < IRB and bottom_right_ir < IRB and x > 10:
                 break
+            elif bottom_left_ir < IRB and bottom_right_ir < IRB:
+                zumi.stop()
+                if tf.fixZumiPosition(lastCrossing,nextCrossing):
+                    screen.clear_display()
+                    screen.draw_text("Thank you")
+                    time.sleep(1.0)
+                    screen.clear_display()
+                    zumi.reset_gyro()
+                    heading = 0
+                    
+                else:
+                    print("This Boy is gone")
+                    return False
+                
             elif bottom_right_ir < IRB:
                 heading += 0.5              # turn left
                 
@@ -35,6 +53,7 @@ def drivethere(startdirection,startCrossing,EndCrossing,graph):
             
             zumi.go_straight(speed, heading)
         zumi.stop()
+        
         print("off")
         print("bheading: " + str(heading))
         print("bGyro: " + str(zumi.read_z_angle()))
@@ -53,6 +72,8 @@ def drivethere(startdirection,startCrossing,EndCrossing,graph):
         print("aheading: " + str(heading))
         print("aGyro: " + str(zumi.read_z_angle()))
         currentheading = path[0]['direction']
+        lastCrossing = path[0]['currentCrossing']
+        nextCrossing = path[0]['nextCrossing']
         path.pop(0)
 
 
@@ -60,4 +81,4 @@ def drivethere(startdirection,startCrossing,EndCrossing,graph):
 zumimap = gr.Graph()
 
 zumimap = pm.initPersonalMap(zumimap)
-drivethere('North','A','F',zumimap)
+drivethere('West','G','A',zumimap)
