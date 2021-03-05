@@ -46,7 +46,40 @@ def turnStraight():
     return heading
 
             
-    
+def turnAround():
+    zumi.reset_gyro()
+   
+    zumi.left_u_turn(speed=20, step=6, delay=0.02)
+    zumi.reset_gyro()
+    heading = 0
+    lf = False
+    rf = False
+    counter = 0
+    for x in range (34):
+        ir_readings = zumi.get_all_IR_data()
+        bottom_right_ir = ir_readings[1]
+        bottom_left_ir = ir_readings[3]
+      
+        if bottom_right_ir > IRB and bottom_left_ir > IRB:
+            heading = heading           # do nothing
+            lf = False
+            rf = False
+            
+        
+        elif bottom_right_ir < IRB and lf == False:
+            heading += (3.5 - counter *0.1)              # turn left
+            rf = True
+            counter = counter +1
+            
+        elif bottom_left_ir < IRB and rf == False:
+            heading -= (3.5 - counter * 0.1)               # turn right
+            lf = True 
+            counter = counter +1
+       
+        zumi.go_straight(10, heading)
+            
+    zumi.stop()
+    return heading
 
 
 def turnRight():
