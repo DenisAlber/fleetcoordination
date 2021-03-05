@@ -19,6 +19,8 @@ def drivethere(startdirection,startCrossing,EndCrossing,graph):
     nextCrossing = None
     
     while len(path) != 0:
+        zumi.reset_gyro()
+        heading = 0
         for x in range(2000): # Take steps
         
             ir_readings = zumi.get_all_IR_data()
@@ -81,4 +83,4 @@ def drivethere(startdirection,startCrossing,EndCrossing,graph):
 zumimap = gr.Graph()
 
 zumimap = pm.initPersonalMap(zumimap)
-drivethere('West','G','A',zumimap)
+drivethere('South','G','A',zumimap)
