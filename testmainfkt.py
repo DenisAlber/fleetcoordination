@@ -11,7 +11,7 @@ IRB = 120
 
 
 def drivethere(startdirection,startCrossing,EndCrossing,graph):
-    path = graph.CalculatePath(startCrossing,EndCrossing)
+    path = graph.CalculatePath(startdirection, startCrossing,EndCrossing)
     currentheading = startdirection
     heading = 0
     speed = 30

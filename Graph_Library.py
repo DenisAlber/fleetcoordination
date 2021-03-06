@@ -43,7 +43,7 @@ class Graph:
                         break
                 break
 
-    def CalculatePath(self, startCrossingName, endCrossingName):
+    def CalculatePath(self, startDirection, startCrossingName, endCrossingName):
         """
             Kalkuliert den kürzesten Weg von dem eingegebenen Start- und Endpunkt
         """
@@ -54,6 +54,8 @@ class Graph:
             if(crossing.crossingName == startCrossingName):
                 crossing.currentWeight = 0
                 crossing.precursor = crossing
+
+                self.CheckIfUturnExists(startDirection, crossing)
 
                 self.Dijkstra(crossing)
 
@@ -72,9 +74,28 @@ class Graph:
         for crossing in self.crossings:
             crossing.precursor = None
             crossing.currentWeight = float('inf')
+            for reachableCrossing in crossing.reachableCrossings:
+                reachableCrossing.additionalWeight = 0
             self.visited = []
             self.unvisited = []
+
     
+    def CheckIfUturnExists(self, startDirection, startCrossing):
+        additionalWeight = 1000
+
+        for crossing in startCrossing.reachableCrossings: 
+            if startDirection == crossing.direction:
+                break
+
+            if startDirection == Direction.North.name and crossing.direction == Direction.South:
+                crossing.additionalWeight = additionalWeight
+            elif startDirection == Direction.South.name and crossing.direction == Direction.North:
+                crossing.additionalWeight = additionalWeight
+            elif startDirection == Direction.West.name and crossing.direction == Direction.East:
+                crossing.additionalWeight = additionalWeight
+            elif startDirection == Direction.East.name and crossing.direction == Direction.West:
+                crossing.additionalWeight = additionalWeight
+
     def GetPath(self, crossingName):
         """
             Baut den Pfad vom Start- bis zum Endpunkt mit dem kürzesten weg auf und gibt diesen zurück
@@ -108,7 +129,10 @@ class Graph:
             if(self.IsCrossingAlreadyVisited(reachableCrossing)):
                 continue
 
-            newWeight = currentCrossing.currentWeight + reachableCrossing.weight
+            if reachableCrossing.additionalWeight == 0:
+                newWeight = currentCrossing.currentWeight + reachableCrossing.weight
+            else:
+                newWeight = currentCrossing.currentWeight + reachableCrossing.weight + reachableCrossing.additionalWeight
 
             if reachableCrossing.crossing.currentWeight == float('inf'):
                 reachableCrossing.crossing.currentWeight = newWeight
@@ -166,6 +190,7 @@ class ReachableCrossing:
         self.crossing = crossing
         self.weight = weight
         self.direction = direction 
+        self.additionalWeight = 0
 
 class Direction(enum.Enum):
     North = 1
