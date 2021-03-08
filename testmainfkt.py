@@ -83,4 +83,4 @@ def drivethere(startdirection,startCrossing,EndCrossing,graph):
 zumimap = gr.Graph()
 
 zumimap = pm.initPersonalMap(zumimap)
-drivethere('South','G','A',zumimap)
+drivethere('East','F','H',zumimap)

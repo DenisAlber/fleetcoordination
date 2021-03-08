@@ -175,9 +175,10 @@ def turnLeft():
         zumi.go_straight(20, heading)
 
         if bottom_left_ir > IRB or bottom_right_ir > IRB:
+            zumi.stop()
             break
-
-    for x in range(16):
+    
+    for x in range(14):
         ir_readings = zumi.get_all_IR_data()
         bottom_right_ir = ir_readings[1]
         bottom_left_ir = ir_readings[3]
@@ -194,7 +195,7 @@ def turnLeft():
             
         
         zumi.go_straight(20, heading)
-    
+    zumi.stop()
     for x in range (100):
 
         ir_readings = zumi.get_all_IR_data()
