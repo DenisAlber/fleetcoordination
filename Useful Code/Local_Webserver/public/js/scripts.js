@@ -69,26 +69,18 @@ var graph = {
     ] 
 }
 
+// width and height for svg image
+var width = 700;
+var height = 600;
 
-    var width = 700;
-    var height = 600;
-// // create svg element:
-// var svg = d3.select("#d3Class")
-//     .selectAll('g')
-//     .data(DUMMY_DATA.nodes)
-//     .append("svg")
-//     .attr("width", 200)
-//     .attr("height", 200);
-// graph.nodes.forEach(element => {
-//     console.log(element.connections);
-// });
-
+// instantiante new <g></g>
 var svg = d3.select("#d3Class").append("svg")
         .attr("class", "text-center")
         .attr("width", width)
         .attr("height", height)
         .append("g");
 
+// add all lines from graph to g
 graph.nodes.forEach(element => {
     // console.log(element.connections.length);
     var connectedNode;
@@ -111,8 +103,15 @@ graph.nodes.forEach(element => {
             return element.name + d.connected;
         })
         .on("click", function(d, i){
+                // send lock for street and change color
                 console.log("Send accident..");
                 var transaction = { node1: element.name, node2: i.connected};
+                if(d3.select(this).style("stroke") === "red"){
+                    d3.select(this).style("stroke", "gray");
+                }
+                else{
+                    d3.select(this).style("stroke", "red");
+                }
                 $.post("/Zumi", transaction)
                     .done(function (data) {
                         console.log(data);
@@ -122,6 +121,7 @@ graph.nodes.forEach(element => {
         
 });
 
+// move overlapping lines 
 svg.selectAll("line").each(function(){
     // console.log(this);
     var firstLine= d3.select(this);
@@ -159,27 +159,9 @@ svg.selectAll("line").each(function(){
         }
 
     })
-    // console.log(ok.attr('x1'));
 })
 
-// graph.nodes.forEach(element => {
-//     console.log(element.connections.length);
-//     var lineList;
-//     svg.selectAll("line"+element.name)
-//         .data(element.connections)
-//         .enter()
-//         .append("line")
-//         .style("stroke", "gray") // <<<<< Add a color
-//         .style("stroke-width", 10)
-//         .attr("x1", element.x)
-//         .attr("y1", element.y)
-//         .attr("x2", function (d) {
-//             return findAttribute(d).x 
-//         })
-//         .attr("y2", function (d) {
-//             return findAttribute(d).y
-//         })
-// });
+// add circles/nodes/crossings
 var circles = svg.selectAll("circle")
     .data(graph.nodes)
     .enter().append("circle")
@@ -198,8 +180,15 @@ var circles = svg.selectAll("circle")
         return d.name;
     })
     .on("click", function(d, i){
+        // send command to go to specific node
         console.log("Send go to..");
         var transaction = { node1: i.name, node2: "nothing"};
+        if(d3.select(this).style("fill") === "green"){
+            d3.select(this).style("fill", "rgb(49, 210, 242)");
+        }
+        else{
+            d3.select(this).style("fill", "green");
+        }
         $.post("/Zumi", transaction)
             .done(function (data) {
                 console.log(data);
@@ -207,6 +196,7 @@ var circles = svg.selectAll("circle")
     });
 
 var nodes = graph.nodes;
+
 // Add text to circles
 var text = svg.selectAll("text")
     .data(graph.nodes)
@@ -226,7 +216,7 @@ var text = svg.selectAll("text")
             });
     });
 
-
+// function to find neighbors
 function findAttribute(name) {
     // console.log(name.connected);
     for (var i = 0, len = graph.nodes.length; i < len; i++) {
@@ -291,7 +281,7 @@ $(document).ready(function () {
     //   });
     // })
 
-
+    // tmp
     $("#sendAc").click(function () {
         console.log("Send accident..");
         var transaction = { node1: 'A', node2: 'C' };
@@ -301,7 +291,7 @@ $(document).ready(function () {
             });
     })
 
-
+    // tmp
     $("#releaseAc").click(function () {
         console.log("Send release accident");
     });
