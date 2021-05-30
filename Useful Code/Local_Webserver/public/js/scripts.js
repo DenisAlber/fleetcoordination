@@ -77,8 +77,7 @@ var height = 600;
 var svg = d3.select("#d3Class").append("svg")
         .attr("class", "text-center")
         .attr("width", width)
-        .attr("height", height)
-        .append("g");
+        .attr("height", height).call(responsivefy);
 
 // add all lines from graph to g
 graph.nodes.forEach(element => {
@@ -226,6 +225,41 @@ function findAttribute(name) {
     return null; // The object was not found
 }
 
+// for responsive graph
+function responsivefy(svg) {
+    // get container + svg aspect ratio
+    var container = d3.select(svg.node().parentNode),
+        width = parseInt(svg.style("width")),
+        height = parseInt(svg.style("height")),
+        aspect = width / height;
+
+    // add viewBox and preserveAspectRatio properties,
+    // and call resize so that svg resizes on inital page load
+    svg.attr("viewBox", "0 0 " + width + " " + height)
+        .attr("perserveAspectRatio", "xMinYMid")
+        .call(resize);
+
+    // to register multiple listeners for same event type, 
+    // you need to add namespace, i.e., 'click.foo'
+    // necessary if you call invoke this function for multiple svgs
+    // api docs: https://github.com/mbostock/d3/wiki/Selections#on
+    d3.select(window).on("resize." + container.attr("id"), resize);
+
+    // get width of container and resize svg to fit it
+    function resize() {
+        var targetWidth = parseInt(container.style("width"));
+        svg.attr("width", targetWidth);
+        svg.attr("height", Math.round(targetWidth / aspect));
+    }
+}
+// var aspect = width / height,
+//     chart = d3.select('g');
+// d3.select(window)
+//   .on("resize", function() {
+//     var targetWidth = chart.node().getBoundingClientRect().width;
+//     chart.attr("width", targetWidth);
+//     chart.attr("height", targetWidth / aspect);
+//   });
 // $("#sendAc").click(function(){
 // console.log("Test");
 // })
