@@ -69,9 +69,9 @@ var db = TAFFY([
 ]);
 
 var myEventHandler = function(){
-  console.log("Moin");
+  console.log("test");
   resList.forEach(element => {
-    element.send("jamoin");
+    element.send("sendTest");
   });
   resList = [];
 }
