@@ -3,9 +3,6 @@
 * Copyright 2013-2021 Start Bootstrap
 * Licensed under MIT (https://github.com/StartBootstrap/startbootstrap-bare/blob/master/LICENSE)
 */
-// This file is intentionally blank
-// Use this file to add JavaScript to your project
-
 
 $(document).ready(function () {
     $.get("/GetMap", function(data){
@@ -15,27 +12,22 @@ $(document).ready(function () {
     });
 
     getTraffic();
-
-    $("#sendAc").click(function () {
-        console.log("Send accident..");
-        var transaction = { node1: 'A', node2: 'C' };
-        $.post("/Zumi", transaction)
-            .done(function (data) {
-                console.log(data);
-            });
-    })
-
-    // tmp
-    $("#releaseAc").click(function () {
-        console.log("Send release accident");
-    });
 })
 
 function getTraffic(){
     $.get('/traffic', function(data){
         console.log(data);
+
+        var svg = d3.select("svg");
+        var line = svg.select(`#${data.id}`);
         
-        // buildSVG(JSON.parse(data));
+        if(data.isBlocked){
+            line.style("stroke", "red");
+        }
+        else{
+            line.style("stroke", "grey");
+        }
+
         getTraffic();
     });
 }
@@ -77,13 +69,13 @@ function buildSVG(graph){
                     // send lock for street and change color
                     console.log("Send accident..");
                     var transaction = { node1: element.name, node2: i.connected};
-                    if(d3.select(this).style("stroke") === "red"){
-                        d3.select(this).style("stroke", "gray");
-                    }
-                    else{
-                        d3.select(this).style("stroke", "red");
-                    }
-                    $.post("/Zumi", transaction)
+                    // if(d3.select(this).style("stroke") === "red"){
+                    //     d3.select(this).style("stroke", "gray");
+                    // }
+                    // else{
+                    //     d3.select(this).style("stroke", "red");
+                    // }
+                    $.post("/traffic", transaction)
                         .done(function (data) {
                             console.log(data);
                         });
@@ -155,13 +147,13 @@ function buildSVG(graph){
             // send command to go to specific node
             console.log("Send go to..");
             var transaction = { node1: i.name, node2: "nothing"};
-            if(d3.select(this).style("fill") === "green"){
-                d3.select(this).style("fill", "rgb(49, 210, 242)");
-            }
-            else{
-                d3.select(this).style("fill", "green");
-            }
-            $.post("/Zumi", transaction)
+            // if(d3.select(this).style("fill") === "green"){
+            //     d3.select(this).style("fill", "rgb(49, 210, 242)");
+            // }
+            // else{
+            //     d3.select(this).style("fill", "green");
+            // }
+            $.post("/traffic", transaction)
                 .done(function (data) {
                     console.log(data);
                 });
@@ -182,7 +174,7 @@ function buildSVG(graph){
         .on("click", function(d, i){
             console.log("Send go to..");
             var transaction = { node1: i.name, node2: "nothing"};
-            $.post("/Zumi", transaction)
+            $.post("/traffic", transaction)
                 .done(function (data) {
                     console.log(data);
                 });
