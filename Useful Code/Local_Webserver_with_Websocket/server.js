@@ -158,7 +158,7 @@ function SetTarget(ws, node){
 }
 
 const server = app.listen(port, () => {
-  console.log(`Example app listening at http://localhost:${port}`);
+//   console.log(`Example app listening at http://localhost:${port}`);
 });
 
 server.on('upgrade', (request, socket, head) => {
