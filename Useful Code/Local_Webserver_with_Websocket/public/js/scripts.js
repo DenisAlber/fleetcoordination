@@ -4,31 +4,51 @@
 * Licensed under MIT (https://github.com/StartBootstrap/startbootstrap-bare/blob/master/LICENSE)
 */
 
-var exampleSocket = new WebSocket('ws://localhost:3000');
+var exampleSocket = new WebSocket('ws://192.168.178.108:3000'); // evtl. anpassen..
 $(document).ready(function () {
 
-
-    var exampleSocket = new WebSocket('ws://localhost:3000');
-    
-    exampleSocket.onopen = function (event) {
-        // exampleSocket.send("Here's some text that the server is urgently awaiting!");
-      };
+    exampleSocket.onopen = function (event) {};
 
     exampleSocket.onmessage = function (event) {
-       console.log(event.data);
-       var ok = event.data;
-       var dat = JSON.parse(ok);
-       console.log(dat);
+        try{
+            JSON.parse(event.data);
+        }
+        catch{
+            if(event.data != "connected to server ..."){
+                alert(event.data);
+            }
+            else{
+                console.log(event.data);
+            }
+            return;
+        }
+        console.log(JSON.parse(event.data));
+        var dat = JSON.parse(event.data);
 
-        var svg = d3.select("svg");
-        var line = svg.select(`#${dat.id}`);
-        
-        if(dat.isBlocked){
-            line.style("stroke", "red");
+        if(dat.hasOwnProperty('isBlocked')){
+            var svg = d3.select("svg");
+            var line = svg.select(`#${dat.id}`);
+            
+            if(dat.isBlocked){
+                line.style("stroke", "red");
+            }
+            else{
+                line.style("stroke", "grey");
+            }
         }
-        else{
-            line.style("stroke", "grey");
+        else if(dat.hasOwnProperty('isTarget')){
+            var svg = d3.select("svg");
+            var circle = svg.select(`#${dat.id}`);
+            
+            if(dat.isTarget){
+                circle.style("fill", "rgb(68, 201, 164)");
+            }
+            else{
+                circle.style("fill", "rgb(49, 210, 242)");
+            }
         }
+       
+
 
      };
 
@@ -38,26 +58,7 @@ $(document).ready(function () {
         buildSVG(JSON.parse(data));
     });
 
-    // getTraffic();
 })
-
-function getTraffic(){
-    $.get('/traffic', function(data){
-        console.log(data);
-
-        var svg = d3.select("svg");
-        var line = svg.select(`#${data.id}`);
-        
-        if(data.isBlocked){
-            line.style("stroke", "red");
-        }
-        else{
-            line.style("stroke", "grey");
-        }
-
-        getTraffic();
-    });
-}
 
 function buildSVG(graph){
     // width and height for svg image
@@ -78,7 +79,15 @@ function buildSVG(graph){
             .data(element.connections)
             .enter()
             .append("line")
-            .style("stroke", "gray") // <<<<< Add a color
+            .style("stroke", function(d){
+                if(d.blocked){
+                    return "red";
+                }
+                else
+                {
+                    return "gray";
+                }
+            })
             .style("stroke-width", 10)
             .attr("x1", element.x)
             .attr("y1", element.y)
@@ -96,16 +105,6 @@ function buildSVG(graph){
                     // send lock for street and change color
                     console.log("Send accident..");
                     var transaction = { node1: element.name, node2: i.connected};
-                    // if(d3.select(this).style("stroke") === "red"){
-                    //     d3.select(this).style("stroke", "gray");
-                    // }
-                    // else{
-                    //     d3.select(this).style("stroke", "red");
-                    // }
-                    // $.post("/traffic", transaction)
-                    //     .done(function (data) {
-                    //         console.log(data);
-                    //     });
                     exampleSocket.send(JSON.stringify(transaction));
                 }
             );
@@ -174,17 +173,7 @@ function buildSVG(graph){
         .on("click", function(d, i){
             // send command to go to specific node
             console.log("Send go to..");
-            var transaction = { node1: i.name, node2: "nothing"};
-            // if(d3.select(this).style("fill") === "green"){
-            //     d3.select(this).style("fill", "rgb(49, 210, 242)");
-            // }
-            // else{
-            //     d3.select(this).style("fill", "green");
-            // // }
-            // $.post("/traffic", transaction)
-            //     .done(function (data) {
-            //         console.log(data);
-            //     });
+            var transaction = { node1: i.name, node2: ""};
             exampleSocket.send(JSON.stringify(transaction));
         });
 
@@ -202,11 +191,7 @@ function buildSVG(graph){
         .style('fill', 'black')
         .on("click", function(d, i){
             console.log("Send go to..");
-            var transaction = { node1: i.name, node2: "nothing"};
-            // $.post("/traffic", transaction)
-            //     .done(function (data) {
-            //         console.log(data);
-            //     });
+            var transaction = { node1: i.name, node2: ""};
             exampleSocket.send(JSON.stringify(transaction));
         });
 
