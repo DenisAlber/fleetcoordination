@@ -2,6 +2,65 @@ const express = require('express');
 const app = express();
 const port = 3000;
 const router = express.Router(); 
+
+const WebSocket = require('ws');
+
+const wsServer = new WebSocket.Server({ noServer: true });
+wsServer.on('connection', ws => {
+  ws.on('message', message => 
+  {
+      console.log(JSON.parse(message).node1)
+      let body = JSON.parse(message)
+
+      let firstNode = body.node1;
+      let secondNode = body.node2;
+  
+      // check if 
+      if(secondNode != "nothing"){
+          console.log("locking street...")
+          // var nodeConnection = db({name : firstNode}).select("connections");
+          // get connections with name
+          var nodeConnection = db({name : firstNode}).first().connections;
+  
+          nodeConnection.forEach(element => {
+              // console.log(element);
+              if(element.connected == secondNode){
+                  if(element.blocked){
+                      console.log("street " + firstNode + " -> " + secondNode +  " unlocked!");
+                      element.blocked = false;
+
+                      var jsonResponse = {id : firstNode + secondNode, isBlocked : element.blocked};
+                      wsServer.clients.forEach(client => {
+                        if (client.readyState === WebSocket.OPEN) {
+                        client.send(JSON.stringify(jsonResponse))
+                        }
+                      })
+                  }
+                  else{
+                      console.log("street " + firstNode + " -> " + secondNode +  " locked!");
+                      element.blocked = true;
+                      
+                      var jsonResponse = {id : firstNode + secondNode, isBlocked : element.blocked};
+                      wsServer.clients.forEach(client => {
+                        if (client.readyState === WebSocket.OPEN) {
+                        client.send(JSON.stringify(jsonResponse))
+                        }
+                      })
+                  }
+              }
+          });
+          db({name : firstNode}).update({connections : nodeConnection});
+        //   res.send("success!");   
+          // console.log(db().stringify());
+      }
+  
+      if(secondNode == "nothing"){
+          console.log("set target...")
+      }
+  });
+  ws.send('shit');
+});
+
 var events = require('events');
 var eventEmitter = new events.EventEmitter();
 var resList = [];
@@ -89,6 +148,9 @@ app.use(express.urlencoded({ extended: false }))
 // parse application/json
 app.use(express.json())
 
+// WebSocket test shit
+
+
 // render and send main page
 router.get('/', (req, res) => {
   res.render('public/index.html', {root: __dirname});
@@ -156,6 +218,12 @@ app.post('/traffic', (req, res) => {
     }
 });
 
-app.listen(port, () => {
+const server = app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`);
 });
+
+server.on('upgrade', (request, socket, head) => {
+    wsServer.handleUpgrade(request, socket, head, socket => {
+      wsServer.emit('connection', socket, request);
+    });
+  });
