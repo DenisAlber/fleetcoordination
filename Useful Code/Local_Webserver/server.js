@@ -102,6 +102,15 @@ app.post('/Zumi', (req, res) =>{
     eventEmitter.emit('tick');
 });
 
+// receive post request
+app.get('/Zumi', (req, res) =>{
+    resList.push(res);
+    // var jsonTest = '{"name":"TestServer", "count":14}';
+    // // console.log("Block "+req.body.node1 + " to " + req.body.node2);
+    // res.send(jsonTest);
+    // eventEmitter.emit('tick');
+});
+
 app.get('/GetMap', (req, res) => {
   let json = `{"nodes" : ${db().stringify()}}`;
   res.send(json);
@@ -119,8 +128,9 @@ app.post('/traffic', (req, res) => {
     if(secondNode != "nothing"){
         console.log("locking street...")
         // var nodeConnection = db({name : firstNode}).select("connections");
+        // get connections with name
         var nodeConnection = db({name : firstNode}).first().connections;
-        // nodeConnection[0].blocked = true;
+
         nodeConnection.forEach(element => {
             // console.log(element);
             if(element.connected == secondNode){
