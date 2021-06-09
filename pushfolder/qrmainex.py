@@ -6,7 +6,10 @@ import time
 from zumi.zumi import Zumi
 from zumi.util.camera import Camera
 from zumi.util.vision import Vision
+
 stopCar = False
+lock = threading.Lock()
+
 
 IRB = 120
 speed = 30
@@ -15,17 +18,26 @@ camera = Camera()
 vision = Vision()
 
 def QRCodeTaker():
+    camera = Camera()
+    camera.start_camera()
     while True:
-        camera = Camera()
-        camera.start_camera()
+        
+      
         frame = camera.capture()
-        camera.close()
+    
+        
         qr_code = vision.find_QR_code(frame)
         message = vision.get_QR_message(qr_code)
         print(message)
+        global stopCar
         if(message != None):
+            
             stopCar = True
-
+            zumi.stop()
+            camera.close()
+            print("ALARMALARMALARMALARM")
+        if(stopCar == True):
+            print("Denis stinkt")
 
 
 def drive():
@@ -33,6 +45,7 @@ def drive():
     zumi.reset_gyro()
     for x in range(2000): # Take steps
         
+        global stopCar
         if(stopCar == True):
             break
 
