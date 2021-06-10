@@ -4,7 +4,8 @@
 * Licensed under MIT (https://github.com/StartBootstrap/startbootstrap-bare/blob/master/LICENSE)
 */
 
-var exampleSocket = new WebSocket('ws://192.168.178.108:3000'); // evtl. anpassen..
+var exampleSocket = new WebSocket('wss://fleetcoordination-zumi-cars.herokuapp.com'); // evtl. anpassen..
+// var exampleSocket = new WebSocket('ws://192.168.178.108:3000')
 $(document).ready(function () {
 
     exampleSocket.onopen = function (event) {};
@@ -15,6 +16,10 @@ $(document).ready(function () {
         }
         catch{
             if(event.data != "connected to server ..."){
+                if(event.data == "pong"){
+                    console.log(event.data);
+                    return;
+                }
                 alert(event.data);
             }
             else{
@@ -57,8 +62,16 @@ $(document).ready(function () {
         
         buildSVG(JSON.parse(data));
     });
-
 })
+
+function noop(){}
+
+const ping = function() {
+    console.log("ping");
+    exampleSocket.send(" ");
+  }
+
+setInterval(ping, 10000);
 
 function buildSVG(graph){
     // width and height for svg image
@@ -192,7 +205,12 @@ function buildSVG(graph){
         .on("click", function(d, i){
             console.log("Send go to..");
             var transaction = { node1: i.name, node2: ""};
-            exampleSocket.send(JSON.stringify(transaction));
+            try{
+                exampleSocket.send(JSON.stringify(transaction));
+            }
+            catch{
+                exampleSocket.onopen()
+            }
         });
 
     // function to find neighbors
@@ -204,7 +222,7 @@ function buildSVG(graph){
         }
         return null; // The object was not found
     }
-
+    
     // for responsive graph
     function responsivefy(svg) {
         // get container + svg aspect ratio

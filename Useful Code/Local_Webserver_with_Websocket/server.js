@@ -1,6 +1,6 @@
 const express = require('express');
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 const router = express.Router(); 
 const WebSocket = require('ws');
 TAFFY = require('taffy');
@@ -99,6 +99,10 @@ wsServer.on('connection', ws => {
   
     ws.on('message', message => 
     {
+        if(message == " ") {
+            ws.send("pong")
+            return;
+        }
         let body = JSON.parse(message)
         if(body.node2 != "")
         {
@@ -158,7 +162,7 @@ function SetTarget(ws, node){
 }
 
 const server = app.listen(port, () => {
-//   console.log(`Example app listening at http://localhost:${port}`);
+  console.log(`Example app listening at http://localhost:${port}`);
 });
 
 server.on('upgrade', (request, socket, head) => {
