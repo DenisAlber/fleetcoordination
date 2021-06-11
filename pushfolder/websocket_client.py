@@ -21,7 +21,7 @@ def SendMessageThread():
         # print(x)
         # ws.send('{"node1":"A", "node2":"B"}')
         
-        ws.send('{"zumiId":"2"}')
+        ws.send('{"zumiId":"1"}')
         time.sleep(2)
 
 def SendMessageThreadTwo():

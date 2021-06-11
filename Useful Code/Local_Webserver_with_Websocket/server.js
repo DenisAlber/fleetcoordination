@@ -67,8 +67,8 @@ var db = TAFFY([
 ]);
 
 var trafficControlDb = TAFFY([
-    {zumiId : "1", nextCrossing : "", direction : ""},
-    {zumiId : "2", nextCrossing : "", direction : ""}
+    {zumiId : "1", currentCrossing : "", nextCrossing : "", direction : ""},
+    {zumiId : "2", currentCrossing : "", nextCrossing : "", direction : ""}
 ])
 
 // For rendering html, boostrap, css
@@ -92,9 +92,10 @@ app.post('/zumi', (req, res) =>{
 });
 
 app.get('/GetMap', (req, res) => {
-  let json = `{"nodes" : ${db().stringify()}}`;
+  let json = `[{"nodes" : ${db().stringify()}}, {"traffic" : ${trafficControlDb().stringify()}}]`;
   res.send(json);
 });
+
 
 // WebSocket
 const wsServer = new WebSocket.Server({ noServer: true });
@@ -107,7 +108,7 @@ wsServer.on('connection', ws => {
         // keep alive ping for heroku application
         // the heroku app goes off after 10 min when no receives any data
         if(message == " ") {
-            ws.send("pong")
+            // ws.send("pong")
             return;
         }
         let body = JSON.parse(message)
@@ -117,39 +118,49 @@ wsServer.on('connection', ws => {
         else if(body.hasOwnProperty('target')){
             SetTarget(ws, body.target);
         }
-        else if(body.hasOwnProperty('zumiId')  
+        else if(body.hasOwnProperty('zumiId')
+                && body.hasOwnProperty('currentCrossing')  
                 && body.hasOwnProperty('nextCrossing')
                 && body.hasOwnProperty('direction')){
 
             trafficControlDb({zumiId : body.zumiId})
-                .update({nextCrossing : body.nextCrossing, direction : body.direction});
+                .update({currentCrossing : body.currentCrossing, nextCrossing : body.nextCrossing, direction : body.direction});
+            console.log(trafficControlDb().stringify());
+            
+            var jsonResponse = {zumiId : body.zumiId, id : body.currentCrossing + body.nextCrossing};
+
+            wsServer.clients.forEach(function each(client){
+                client.send(JSON.stringify(jsonResponse));
+            })
+
         }
         else if(body.hasOwnProperty('zumiId')
                 && !body.hasOwnProperty('nextCrossing')
                 && !body.hasOwnProperty('direction')){
             
-            ws.send(CanDrive(body).toString());
-
-
-            // var other = trafficControlDb({zumiId : {"!is" : body.zumiId}}).stringify()
-
-            // console.log("other Zumi: " + other)
+            var jsonResponse = {canDrive : CanDrive(body).toString()};
+            ws.send(JSON.stringify(jsonResponse));
         }
     });
   });
 
 function CanDrive(body){
-    if(trafficControlDb({zumiId : body.zumiId}).nextCrossing == "" 
-        || trafficControlDb({zumiId : {"!is" : body.zumiId}}).nextCrossing == "") return true;
+    console.log("Zumi-ID " + body.zumiId );
+    if(trafficControlDb({zumiId : body.zumiId}).select("nextCrossing")[0] == "" 
+        || trafficControlDb({zumiId : {"!is" : body.zumiId}}).select("nextCrossing")[0] == "") return true;
 
-    if(trafficControlDb({zumiId : body.zumiId}).nextCrossing 
-        != trafficControlDb({zumiId : {"!is" : body.zumiId}}).nextCrossing) return true;
+    console.log(trafficControlDb({zumiId : body.zumiId}).select("nextCrossing")[0]);
+    
+    if(trafficControlDb({zumiId : body.zumiId}).select("nextCrossing")[0] 
+        != trafficControlDb({zumiId : {"!is" : body.zumiId}}).select("nextCrossing")[0]) return true;
 
-    return crossingRules(trafficControlDb({zumiId : body.zumiId}).direction, trafficControlDb({zumiId : {"!is" : body.zumiId}}).direction);
+    return crossingRules(trafficControlDb({zumiId : body.zumiId}).select("direction")[0], trafficControlDb({zumiId : {"!is" : body.zumiId}}).select("direction")[0]);
 }
 
 function crossingRules(thisDirection, otherDirection){
     // cars are on the opposite sides
+    console.log("this direction " + thisDirection);
+    console.log("other direction " + otherDirection);
     if(thisDirection == "North" && otherDirection == "South") return true;
     if(thisDirection == "South" && otherDirection == "North") return false;
     if(thisDirection == "West" && otherDirection == "East") return true;

@@ -4,13 +4,16 @@
 * Licensed under MIT (https://github.com/StartBootstrap/startbootstrap-bare/blob/master/LICENSE)
 */
 
-// var exampleSocket = new WebSocket('wss://fleetcoordination-zumi-cars.herokuapp.com'); // evtl. anpassen..
-var exampleSocket = new WebSocket('ws://192.168.178.108:3000')
+// var webSocket = new WebSocket('wss://fleetcoordination-zumi-cars.herokuapp.com'); // evtl. anpassen..
+var tmpZumiOneLine;
+var tmpZumiTwoLine;
+var webSocket = new WebSocket('ws://192.168.178.108:3000')
 $(document).ready(function () {
 
-    exampleSocket.onopen = function (event) {};
 
-    exampleSocket.onmessage = function (event) {
+    webSocket.onopen = function (event) {};
+
+    webSocket.onmessage = function (event) {
         try{
             JSON.parse(event.data);
         }
@@ -52,23 +55,114 @@ $(document).ready(function () {
                 circle.style("fill", "rgb(49, 210, 242)");
             }
         }
-       
-
-
+        else if(dat.hasOwnProperty('zumiId')){
+            if(dat.zumiId == "1"){
+                var svg = d3.select("svg");
+                var line = svg.select(`#${dat.id}`);
+                if(tmpZumiOneLine != null){
+                    tmpZumiOneLine.style("stroke", "grey");
+                }
+                line.style("stroke", "lightgreen");
+                tmpZumiOneLine = line;
+            }
+            else if(dat.zumiId == "2"){
+                var svg = d3.select("svg");
+                var line = svg.select(`#${dat.id}`);
+                if(tmpZumiTwoLine != null){
+                    tmpZumiTwoLine.style("stroke", "grey");
+                }
+                line.style("stroke", "lightblue");
+                tmpZumiTwoLine = line
+            }
+        }
      };
 
     $.get("/GetMap", function(data){
         console.log(JSON.parse(data));
         
-        buildSVG(JSON.parse(data));
+        buildSVG(JSON.parse(data)[0]);
+
+        var zumidatadb = JSON.parse(data)[1].traffic;
+        console.log(zumidatadb);
+        if(zumidatadb[0].currentCrossing != "" && zumidatadb[0].nextCrossing != ""){
+            SetStreetToZumiColor(zumidatadb[0].zumiId, zumidatadb[0].currentCrossing + zumidatadb[0].nextCrossing);
+        }
+        
+        if(zumidatadb[1].currentCrossing != "" && zumidatadb[1].nextCrossing != ""){
+            SetStreetToZumiColor(zumidatadb[1].zumiId, zumidatadb[1].currentCrossing + zumidatadb[1].nextCrossing);
+        }
     });
+})
+
+function SetStreetToZumiColor(zumiId, id){
+    if(zumiId == "1"){
+        var svg = d3.select("svg");
+        var line = svg.select(`#${id}`);
+        if(tmpZumiOneLine != null){
+            tmpZumiOneLine.style("stroke", "grey");
+        }
+        line.style("stroke", "lightgreen");
+        tmpZumiOneLine = line;
+    }
+    else if(zumiId == "2"){
+        var svg = d3.select("svg");
+        var line = svg.select(`#${id}`);
+        if(tmpZumiTwoLine != null){
+            tmpZumiTwoLine.style("stroke", "grey");
+        }
+        line.style("stroke", "lightblue");
+        tmpZumiTwoLine = line
+    }
+}
+
+$("#setZumiPos").click(() => {
+    var id = $("#zumiID").val();
+    var pos = $("#zumiPosition").val().trim().toUpperCase().split('');
+    var dir = $("#direction").val().trim();
+    dir = dir.charAt(0).toUpperCase() + dir.slice(1);
+    console.log(id);
+    console.log(pos[0] + pos[1]);
+    console.log(dir);
+    if(id != 1 && id != 2){
+        alert("The Zumi-ID " + id + " is not allowed!");
+        return;
+    } 
+    if(pos.length < 2 || pos.length > 2){
+        alert("The street length is too long or too short!");
+        return;
+    }
+    var tempPosID = pos[0]+pos[1];
+    var svg = d3.select("svg");
+    var line = svg.select(`#${tempPosID}`);
+    
+    if(line.style("stroke") == "red"){
+        alert("Can't set position from Zumi to a locked Street!");
+        return;
+    }
+
+    if(line.style("stroke") == "lightblue" || line.style("stroke") == "lightgreen"){
+        alert("The Zumi itself or another Zumi is already set to this position!");
+        return;
+    }
+
+    if(dir != "West" && dir != "East" && dir != "North" && dir != "South"){
+        alert("The direction " + direction + " does not exist!")
+        return;
+    }
+
+    var json = {zumiId : `${id}`, currentCrossing : pos[0], nextCrossing : pos[1], direction : dir}
+    webSocket.send(JSON.stringify(json))
+    
+    $("#zumiID").val('');
+    $("#zumiPosition").val('');
+    $("#direction").val('');
 })
 
 function noop(){}
 
 const ping = function() {
-    console.log("ping");
-    exampleSocket.send(" ");
+    // console.log("ping");
+    webSocket.send(" ");
   }
 
 setInterval(ping, 10000);
@@ -118,7 +212,7 @@ function buildSVG(graph){
                     // send lock for street and change color
                     console.log("Send accident..");
                     var transaction = { node1: element.name, node2: i.connected};
-                    exampleSocket.send(JSON.stringify(transaction));
+                    webSocket.send(JSON.stringify(transaction));
                 }
             );
             
@@ -187,7 +281,7 @@ function buildSVG(graph){
             // send command to go to specific node
             console.log("Send go to..");
             var transaction = { target : i.name };
-            exampleSocket.send(JSON.stringify(transaction));
+            webSocket.send(JSON.stringify(transaction));
         });
 
     var nodes = graph.nodes;
@@ -206,10 +300,10 @@ function buildSVG(graph){
             console.log("Send go to..");
             var transaction = { target : i.name };
             try{
-                exampleSocket.send(JSON.stringify(transaction));
+                webSocket.send(JSON.stringify(transaction));
             }
             catch{
-                exampleSocket.onopen()
+                webSocket.onopen()
             }
         });
 
