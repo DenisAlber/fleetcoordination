@@ -19,13 +19,21 @@ def on_close(ws):
 def SendMessageThread():
     while True:
         # print(x)
-        ws.send('{"node1":"A", "node2":"B"}')
+        # ws.send('{"node1":"A", "node2":"B"}')
+        
+        ws.send('{"zumiId":"2"}')
+        time.sleep(2)
+
+def SendMessageThreadTwo():
+    while True:
+        # print(x)
+        ws.send('{"node1":"B", "node2":"C"}')
         time.sleep(1)
 
 
 websocket.enableTrace(True)
-ws = websocket.WebSocketApp("wss://fleetcoordination-zumi-cars.herokuapp.com/", on_message = on_message, on_close = on_close)
-# ws = websocket.WebSocketApp("ws://localhost:3000", on_message = on_message, on_close = on_close)
+# ws = websocket.WebSocketApp("wss://fleetcoordination-zumi-cars.herokuapp.com/", on_message = on_message, on_close = on_close)
+ws = websocket.WebSocketApp("ws://localhost:3000", on_message = on_message, on_close = on_close)
 
 # Start websocket client
 wst = threading.Thread(target=ws.run_forever)
@@ -38,8 +46,8 @@ while not ws.sock.connected and conn_timeout:
     time.sleep(1)
     conn_timeout -= 1
 
-# thread = threading.Thread(target = LongPolling)
-thread2 = threading.Thread(target = SendMessageThread)
-# thread.start()
-thread2.start()
+thread = threading.Thread(target = SendMessageThread)
+# thread2 = threading.Thread(target = SendMessageThreadTwo)
+thread.start()
+# thread2.start()
 print("wait...")

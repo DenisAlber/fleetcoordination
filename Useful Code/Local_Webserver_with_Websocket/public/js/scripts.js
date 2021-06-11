@@ -4,8 +4,8 @@
 * Licensed under MIT (https://github.com/StartBootstrap/startbootstrap-bare/blob/master/LICENSE)
 */
 
-var exampleSocket = new WebSocket('wss://fleetcoordination-zumi-cars.herokuapp.com'); // evtl. anpassen..
-// var exampleSocket = new WebSocket('ws://192.168.178.108:3000')
+// var exampleSocket = new WebSocket('wss://fleetcoordination-zumi-cars.herokuapp.com'); // evtl. anpassen..
+var exampleSocket = new WebSocket('ws://192.168.178.108:3000')
 $(document).ready(function () {
 
     exampleSocket.onopen = function (event) {};
@@ -186,7 +186,7 @@ function buildSVG(graph){
         .on("click", function(d, i){
             // send command to go to specific node
             console.log("Send go to..");
-            var transaction = { node1: i.name, node2: ""};
+            var transaction = { target : i.name };
             exampleSocket.send(JSON.stringify(transaction));
         });
 
@@ -204,7 +204,7 @@ function buildSVG(graph){
         .style('fill', 'black')
         .on("click", function(d, i){
             console.log("Send go to..");
-            var transaction = { node1: i.name, node2: ""};
+            var transaction = { target : i.name };
             try{
                 exampleSocket.send(JSON.stringify(transaction));
             }

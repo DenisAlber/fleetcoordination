@@ -5,6 +5,7 @@ def initPersonalMap(graph):
     graph.AddCrossing("B")
     graph.AddCrossing("C")
     graph.AddCrossing("D")
+    graph.AddCrossing("E")
     graph.AddCrossing("F")
     graph.AddCrossing("G")
     graph.AddCrossing("H")
