@@ -1,4 +1,4 @@
-from long_polling import WaitThread
+#from long_polling import WaitThread
 import requests
 import json
 import threading
@@ -49,6 +49,7 @@ def QRCapture():
             if(message != None and 'example' in messagelist):
                 global qrmessage
                 qrmessage = message
+                
         camera.close()
         while scanRoute == False:
             print("Kamera ist aus")
@@ -58,16 +59,20 @@ def QRCapture():
 
 
 def DriveManager():
+    
     global inCrossing
     global currentheading
     global calculatedPath
     global lastCrossing
     global nextCrossing
+    
     while True:
         if calculatedPath != None and inCrossing == False:
+            
+            print(inCrossing)
             GoStraight()
-            inCrossing == True
-            scanRoute == False
+            inCrossing = True
+            scanRoute = False
             #checkIfAbb
         if calculatedPath != None and inCrossing == True:
 
@@ -115,11 +120,13 @@ def ServerThread():
     endCrossing = 'C'
     currentheading = startDirection
     calculatedPath = zumiMap.CalculatePath(startDirection,startCrossing,endCrossing)
+    
 
 
 def getCrossingDirection():
     global currentheading
     global calculatedPath
+    print(calculatedPath)
     if currentheading == 'North' and calculatedPath[0]['direction'] == 'West' or currentheading == 'East' and calculatedPath[0]['direction'] == 'North' or currentheading == 'South' and calculatedPath[0]['direction'] == 'East'or currentheading == 'West' and calculatedPath[0]['direction'] == 'South':
         return 0 #left
     elif currentheading == calculatedPath[0]['direction']:
@@ -133,6 +140,7 @@ def GoStraight():
     zumi.reset_gyro()
     heading = 0
     for x in range(2000): # Take steps
+        
     
         ir_readings = zumi.get_all_IR_data()
         bottom_right_ir = ir_readings[1]
