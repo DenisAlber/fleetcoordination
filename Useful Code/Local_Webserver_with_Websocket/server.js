@@ -66,6 +66,11 @@ var db = TAFFY([
 }
 ]);
 
+var trafficControlDb = TAFFY([
+    {zumiId : "1", nextCrossing : "", direction : ""},
+    {zumiId : "2", nextCrossing : "", direction : ""}
+])
+
 // For rendering html, boostrap, css
 app.use(express.static('public'));
 
@@ -83,7 +88,7 @@ router.get('/', (req, res) => {
 // For resetting target
 // JSON String should be {id: 'A'}
 app.post('/zumi', (req, res) =>{
-    db({name : req.body.id}).update()
+    db({name : req.body.id}).update({isTarget : false});
 });
 
 app.get('/GetMap', (req, res) => {
@@ -99,20 +104,65 @@ wsServer.on('connection', ws => {
   
     ws.on('message', message => 
     {
+        // keep alive ping for heroku application
+        // the heroku app goes off after 10 min when no receives any data
         if(message == " ") {
             ws.send("pong")
             return;
         }
         let body = JSON.parse(message)
-        if(body.node2 != "")
-        {
+        if(body.hasOwnProperty('node1') && body.hasOwnProperty('node2')){
             SetLock(ws, body.node1, body.node2);
         }
-        else{
-            SetTarget(ws, body.node1);
+        else if(body.hasOwnProperty('target')){
+            SetTarget(ws, body.target);
+        }
+        else if(body.hasOwnProperty('zumiId')  
+                && body.hasOwnProperty('nextCrossing')
+                && body.hasOwnProperty('direction')){
+
+            trafficControlDb({zumiId : body.zumiId})
+                .update({nextCrossing : body.nextCrossing, direction : body.direction});
+        }
+        else if(body.hasOwnProperty('zumiId')
+                && !body.hasOwnProperty('nextCrossing')
+                && !body.hasOwnProperty('direction')){
+            
+            ws.send(CanDrive(body).toString());
+
+
+            // var other = trafficControlDb({zumiId : {"!is" : body.zumiId}}).stringify()
+
+            // console.log("other Zumi: " + other)
         }
     });
   });
+
+function CanDrive(body){
+    if(trafficControlDb({zumiId : body.zumiId}).nextCrossing == "" 
+        || trafficControlDb({zumiId : {"!is" : body.zumiId}}).nextCrossing == "") return true;
+
+    if(trafficControlDb({zumiId : body.zumiId}).nextCrossing 
+        != trafficControlDb({zumiId : {"!is" : body.zumiId}}).nextCrossing) return true;
+
+    return crossingRules(trafficControlDb({zumiId : body.zumiId}).direction, trafficControlDb({zumiId : {"!is" : body.zumiId}}).direction);
+}
+
+function crossingRules(thisDirection, otherDirection){
+    // cars are on the opposite sides
+    if(thisDirection == "North" && otherDirection == "South") return true;
+    if(thisDirection == "South" && otherDirection == "North") return false;
+    if(thisDirection == "West" && otherDirection == "East") return true;
+    if(thisDirection == "East" && otherDirection == "West") return false;
+    
+    // car is on the right side from the other one
+    if(thisDirection == "North" && otherDirection != "West") return true;
+    if(thisDirection == "South" && otherDirection != "East") return true;
+    if(thisDirection == "West" && otherDirection != "South") return true;
+    if(thisDirection == "East" && otherDirection != "North") return true;
+
+    return false;
+}
 
 function SetLock(ws, firstNode, secondNode){
     console.log("locking street...")

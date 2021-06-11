@@ -81,7 +81,7 @@ class Graph:
 
     
     def CheckIfUturnExists(self, startDirection, startCrossing):
-        additionalWeight = 1000
+        additionalWeight = 1
 
         for crossing in startCrossing.reachableCrossings: 
             if startDirection == crossing.direction:
@@ -160,7 +160,7 @@ class Graph:
         """
         if self.visited != None:
             for previousCrossing in self.visited:
-                if(reachableCrossing.crossing.crossingName == previousCrossing):
+                if(reachableCrossing.crossing == previousCrossing):
                     return True
             return False
     
