@@ -4,10 +4,10 @@
 * Licensed under MIT (https://github.com/StartBootstrap/startbootstrap-bare/blob/master/LICENSE)
 */
 
-// var webSocket = new WebSocket('wss://fleetcoordination-zumi-cars.herokuapp.com'); // evtl. anpassen..
+var webSocket = new WebSocket('wss://fleetcoordination-zumi-cars.herokuapp.com'); // evtl. anpassen..
 var tmpZumiOneLine;
 var tmpZumiTwoLine;
-var webSocket = new WebSocket('ws://192.168.178.108:3000')
+// var webSocket = new WebSocket('ws://192.168.178.108:3000')
 $(document).ready(function () {
 
 
@@ -20,7 +20,7 @@ $(document).ready(function () {
         catch{
             if(event.data != "connected to server ..."){
                 if(event.data == "pong"){
-                    console.log(event.data);
+                    // console.log(event.data);
                     return;
                 }
                 alert(event.data);
@@ -211,6 +211,13 @@ function buildSVG(graph){
             .on("click", function(d, i){
                     // send lock for street and change color
                     console.log("Send accident..");
+                    var svg = d3.select("svg");
+                    var line = svg.select(`#${element.name + i.connected}`);
+                    
+                    if(line.style("stroke") == "lightgreen" || line.style("stroke") == "lightblue"){
+                        alert("Can't set lock where Zumi is positioned!");
+                        return;
+                    }
                     var transaction = { node1: element.name, node2: i.connected};
                     webSocket.send(JSON.stringify(transaction));
                 }
@@ -264,7 +271,15 @@ function buildSVG(graph){
         .data(graph.nodes)
         .enter().append("circle")
         .style("stroke", "gray")
-        .style("fill", "rgb(49, 210, 242)")
+        .style("fill", function(d){
+            if(d.isTarget){
+                return "rgb(68, 201, 164)";
+            }
+            else
+            {
+                return "rgb(49, 210, 242)";
+            }
+        })
         .attr("r", function (d, i) {
             return d.r;
         })
@@ -299,12 +314,7 @@ function buildSVG(graph){
         .on("click", function(d, i){
             console.log("Send go to..");
             var transaction = { target : i.name };
-            try{
                 webSocket.send(JSON.stringify(transaction));
-            }
-            catch{
-                webSocket.onopen()
-            }
         });
 
     // function to find neighbors

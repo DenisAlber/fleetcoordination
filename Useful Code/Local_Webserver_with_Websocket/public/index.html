@@ -20,17 +20,10 @@
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
                     <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-                        <li id = "reset" class="nav-item"><a class="nav-link active" href="#">Home</a></li>
-                        <li class="nav-item"><a class="nav-link" href="#">Link</a></li>
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Dropdown</a>
-                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                                <li><a class="dropdown-item" href="#">Action</a></li>
-                                <li><a class="dropdown-item" href="#">Another action</a></li>
-                                <li><hr class="dropdown-divider"/></li>
-                                <li><a class="dropdown-item" href="#">Something else here</a></li>
-                            </ul>
-                        </li>
+                       
+                        <li class="nav-item"><a class="nav-link" href="#legend">Legend</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#zumiID">Set Zumi Position</a></li>
+                        
                     </ul>
                 </div>
             </div>
@@ -38,6 +31,15 @@
         <!-- Page content-->
         <div class="container">
             <div id = "d3Class" class = "text-center">
+
+            </div>
+            <div class="text-center mt-5">
+                <p class="lead" id = "legend">Legend</p>
+                <button  class="btn btn-warning">Zumi-ID : 1</button>
+                <button  class="btn btn-light">Zumi-ID : 2</button>
+                <button  class="btn btn-danger">Street Locked</button>
+                <button  class="btn btn-secondary">Street Free</button>
+                <button  class="btn btn-success">Target Set</button>
 
             </div>
             <div class="text-center mt-5">
@@ -61,7 +63,9 @@
                 <div class="form-check">
                 </div>
                 <button id="setZumiPos" class="btn btn-primary">Set Position</button>
-             
+                <div class="mx-auto" style="height: 200px;">
+                    
+                  </div>
         </div>
         <!-- Bootstrap core JS-->
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js"></script>

@@ -107,16 +107,35 @@ wsServer.on('connection', ws => {
     {
         // keep alive ping for heroku application
         // the heroku app goes off after 10 min when no receives any data
-        if(message == " ") {
+        try{
+            JSON.parse(message);
+        }
+        catch
+        {
+            if(message == " ") {
             // ws.send("pong")
             return;
+            }
         }
         let body = JSON.parse(message)
         if(body.hasOwnProperty('node1') && body.hasOwnProperty('node2')){
+            // trafficControlDb().forEach(element=>{
+                // if(element.select("currentCrossing") == body.node1
+                //     && element.select("nextCrossing") == body.node2){
+                //         ws.send("Can't lock position where a Zu")
+                //     }
+            // })
             SetLock(ws, body.node1, body.node2);
         }
         else if(body.hasOwnProperty('target')){
             SetTarget(ws, body.target);
+        }
+        else if(body.hasOwnProperty('release')){
+            db({name : body.release}).update({isTarget : false});
+            var jsonResponse = {id : body.release, isTarget : false};
+            wsServer.clients.forEach(function each(client){
+                client.send(JSON.stringify(jsonResponse));
+            })
         }
         else if(body.hasOwnProperty('zumiId')
                 && body.hasOwnProperty('currentCrossing')  
@@ -136,11 +155,24 @@ wsServer.on('connection', ws => {
         }
         else if(body.hasOwnProperty('zumiId')
                 && !body.hasOwnProperty('nextCrossing')
-                && !body.hasOwnProperty('direction')){
+                && !body.hasOwnProperty('direction')
+                && !body.hasOwnProperty('getOtherPosition')){
             
             var jsonResponse = {canDrive : CanDrive(body).toString()};
             ws.send(JSON.stringify(jsonResponse));
         }
+        else if(body.hasOwnProperty('zumiId')
+                && body.hasOwnProperty('getOtherPosition')
+                && !body.hasOwnProperty('nextCrossing')
+                && !body.hasOwnProperty('direction')){
+                    if(body.GetOtherPosition == "false") return;
+                    console.log(trafficControlDb({zumiId : {"!is" : body.zumiId}}).stringify());
+                    var currCrossing = trafficControlDb({zumiId : {"!is" : body.zumiId}}).select("currentCrossing")[0];
+                    var nxtCrossing = trafficControlDb({zumiId : {"!is" : body.zumiId}}).select("nextCrossing")[0];
+                    var jsonResponse = {currentCrossing : currCrossing, nextCrossing : nxtCrossing};
+                    console.log(jsonResponse);
+                    ws.send(JSON.stringify(jsonResponse));
+                }
     });
   });
 

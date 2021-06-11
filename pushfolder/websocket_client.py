@@ -19,9 +19,18 @@ def on_close(ws):
 def SendMessageThread():
     while True:
         # print(x)
+
+        # lock street
         # ws.send('{"node1":"A", "node2":"B"}')
         
-        ws.send('{"zumiId":"1"}')
+        # can drive?
+        # ws.send('{"zumiId":"1"}')
+
+        # get other position
+        # ws.send('{"zumiId":"1", "getOtherPosition" : "true"}')
+
+        # release target
+        ws.send('{"release" : "A"}')
         time.sleep(2)
 
 def SendMessageThreadTwo():

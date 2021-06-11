@@ -3068,13 +3068,13 @@ textarea.form-control-lg {
 
 .btn-warning {
   color: #000;
-  background-color: #ffc107;
-  border-color: #ffc107;
+  background-color: lightgreen;
+  border-color: lightgreen;
 }
 .btn-warning:hover {
   color: #000;
-  background-color: #ffca2c;
-  border-color: #ffc720;
+  background-color: lightgreen;
+  border-color: lightgreen;
 }
 .btn-check:focus + .btn-warning, .btn-warning:focus {
   color: #000;
@@ -3128,13 +3128,13 @@ textarea.form-control-lg {
 
 .btn-light {
   color: #000;
-  background-color: #f8f9fa;
-  border-color: #f8f9fa;
+  background-color: lightblue;
+  border-color: lightblue;
 }
 .btn-light:hover {
   color: #000;
-  background-color: #f9fafb;
-  border-color: #f9fafb;
+  background-color: lightblue;
+  border-color: lightblue;
 }
 .btn-check:focus + .btn-light, .btn-light:focus {
   color: #000;
