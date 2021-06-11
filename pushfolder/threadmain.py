@@ -14,7 +14,7 @@ from zumi.util.camera import Camera
 from zumi.util.vision import Vision
 
 zumi = Zumi()
-camera = Camera()
+
 vision = Vision()
 screen=Screen()
 
@@ -46,8 +46,10 @@ def QRCapture():
             qr_code = vision.find_QR_code(frame)
             message = vision.get_QR_message(qr_code)
 
-            if(message != None and 'example' in messagelist):
+            if(message != None):
                 global qrmessage
+                print(str(message))
+                zumi.stop()
                 qrmessage = message
                 
         camera.close()
@@ -65,34 +67,40 @@ def DriveManager():
     global calculatedPath
     global lastCrossing
     global nextCrossing
+    global qrmessage
     
     while True:
-        if calculatedPath != None and inCrossing == False:
+        if qrmessage != "":
+            break
+        if len(calculatedPath) > 0 and inCrossing == False:
             
             print(inCrossing)
             GoStraight()
             inCrossing = True
             scanRoute = False
             #checkIfAbb
-        if calculatedPath != None and inCrossing == True:
+        if len(calculatedPath) > 0 and inCrossing == True:
 
             dirnumber = getCrossingDirection()
             #abgleich mit anderem auto
-
+            print("dirnumber:" + str(dirnumber))
             #lock
             if dirnumber == 0:
-                tf.turnLeft
+                tf.turnLeft()
             elif dirnumber == 1:
-                tf.turnStraight
+                tf.turnStraight()
             elif dirnumber == 2:
-                tf.turnRight
+                tf.turnRight()
             elif dirnumber == 3:
-                tf.turnAround
+                tf.turnAround()
             currentheading = calculatedPath[0]['direction']
             lastCrossing = calculatedPath[0]['currentCrossing']
             nextCrossing = calculatedPath[0]['nextCrossing']
             calculatedPath.pop(0)
+            inCrossing = False
+            scanRoute = True
             #lock aufheben
+    print("while over")
             
 
 
@@ -171,8 +179,10 @@ def GoStraight():
         elif bottom_left_ir < IRB:
             heading -= 0.5               # turn right
             
-        
-        zumi.go_straight(speed, heading)
+        if(qrmessage == ""):
+            zumi.go_straight(speed, heading)
+        else:
+            break
     zumi.stop()
         
 
@@ -186,6 +196,7 @@ def GoStraight():
 
 thread = threading.Thread(target = ServerThread)
 thread2 = threading.Thread(target = DriveManager)
-#thread3 = threading.Thread()
+thread3 = threading.Thread(target= QRCapture)
 thread.start()
 thread2.start()
+thread3.start()
