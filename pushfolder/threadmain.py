@@ -118,7 +118,7 @@ def DriveManager():
 
 
             inCrossing = False
-            scanRoute = False
+            scanRoute = True
             #lock aufheben
     print("while over")
             
