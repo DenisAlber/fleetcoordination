@@ -7,12 +7,27 @@ import websocket
 # url = 'http://192.168.10.80:3000/Zumi'
 # x = requests.get(url)
 # data = json.loads(x.text)
-
+zumiID = "1"
 
 # print(data.get("id"))
 def on_message(ws, message):
     print(message)
-
+    jsonMessage = json.loads(message)
+    if("id" in jsonMessage and "isTarget" in jsonMessage):
+        print(jsonMessage["id"])
+        if(jsonMessage["isTarget"] == True):
+            print(jsonMessage["isTarget"])
+    if("zumiId" in jsonMessage and "id" in jsonMessage and "direction" in jsonMessage):
+        if(jsonMessage["zumiId"] == zumiID):
+            print("Setze Zumi Position..")
+            global startCrossing
+            global startDirection
+            crossing = jsonMessage["id"]
+            crossing = list(crossing)
+            crossing.reverse()
+            startCrossing = crossing[0]
+            startDirection = jsonMessage["direction"]
+            print("Die nächste Kreuzung des Zumis ist: " + startCrossing + ", " + startDirection)
 def on_close(ws):
     print("### closed ###")
 
@@ -30,19 +45,19 @@ def SendMessageThread():
         # ws.send('{"zumiId":"1", "getOtherPosition" : "true"}')
 
         # release target
-        ws.send('{"release" : "A"}')
+        ws.send('{"release" : "C"}')
         time.sleep(2)
 
 def SendMessageThreadTwo():
     while True:
         # print(x)
-        ws.send('{"node1":"B", "node2":"C"}')
+        # ws.send('{"node1":"B", "node2":"C"}')
         time.sleep(1)
 
 
 websocket.enableTrace(True)
 # ws = websocket.WebSocketApp("wss://fleetcoordination-zumi-cars.herokuapp.com/", on_message = on_message, on_close = on_close)
-ws = websocket.WebSocketApp("ws://localhost:3000", on_message = on_message, on_close = on_close)
+ws = websocket.WebSocketApp("ws://192.168.178.108:3000/", on_message = on_message, on_close = on_close)
 
 # Start websocket client
 wst = threading.Thread(target=ws.run_forever)

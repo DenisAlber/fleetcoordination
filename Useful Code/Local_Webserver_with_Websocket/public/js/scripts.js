@@ -4,10 +4,10 @@
 * Licensed under MIT (https://github.com/StartBootstrap/startbootstrap-bare/blob/master/LICENSE)
 */
 
-var webSocket = new WebSocket('wss://fleetcoordination-zumi-cars.herokuapp.com'); // evtl. anpassen..
+// var webSocket = new WebSocket('wss://fleetcoordination-zumi-cars.herokuapp.com'); // evtl. anpassen..
 var tmpZumiOneLine;
 var tmpZumiTwoLine;
-// var webSocket = new WebSocket('ws://192.168.178.108:3000')
+var webSocket = new WebSocket('ws://192.168.178.108:3000')
 $(document).ready(function () {
 
 

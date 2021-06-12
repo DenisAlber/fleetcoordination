@@ -146,7 +146,7 @@ wsServer.on('connection', ws => {
                 .update({currentCrossing : body.currentCrossing, nextCrossing : body.nextCrossing, direction : body.direction});
             console.log(trafficControlDb().stringify());
             
-            var jsonResponse = {zumiId : body.zumiId, id : body.currentCrossing + body.nextCrossing};
+            var jsonResponse = {zumiId : body.zumiId, id : body.currentCrossing + body.nextCrossing, direction : body.direction};
 
             wsServer.clients.forEach(function each(client){
                 client.send(JSON.stringify(jsonResponse));
