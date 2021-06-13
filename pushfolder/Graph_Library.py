@@ -126,6 +126,9 @@ class Graph:
         """
         for reachableCrossing in currentCrossing.reachableCrossings:
 
+            if(reachableCrossing.isLocked == True): 
+                continue
+
             if(self.IsCrossingAlreadyVisited(reachableCrossing)):
                 continue
 
@@ -163,6 +166,22 @@ class Graph:
                 if(reachableCrossing.crossing == previousCrossing):
                     return True
             return False
+
+    def SetLockForStreet(self, firstCrossing, secondCrossing):
+        for crossing in self.crossings:
+            if(crossing.crossingName == firstCrossing):
+                for reachableCrossing in crossing.reachableCrossings:
+                    if(reachableCrossing.crossing.crossingName == secondCrossing):
+                        reachableCrossing.isLocked = True
+                        return
+
+    def ReleaseLockForStreet(self, firstCrossing, secondCrossing):
+        for crossing in self.crossings:
+            if(crossing.crossingName == firstCrossing):
+                for reachableCrossing in crossing.reachableCrossings:
+                    if(reachableCrossing.crossing.crossingName == secondCrossing):
+                        reachableCrossing.isLocked = False
+                        return
     
 
 class Crossing:
@@ -187,6 +206,7 @@ class Crossing:
 
 class ReachableCrossing:
     def __init__(self, crossing, weight, direction):
+        self.isLocked = False
         self.crossing = crossing
         self.weight = weight
         self.direction = direction 

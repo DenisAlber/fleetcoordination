@@ -32,7 +32,7 @@ def on_close(ws):
     print("### closed ###")
 
 def SendMessageThread():
-    while True:
+    # while True:
         # print(x)
 
         # lock street
@@ -45,8 +45,10 @@ def SendMessageThread():
         # ws.send('{"zumiId":"1", "getOtherPosition" : "true"}')
 
         # release target
-        ws.send('{"release" : "C"}')
-        time.sleep(2)
+    # ws.send('{"release" : "F"}')
+    ws.send('{"zumiId" : "2", "getOtherPosition" : "false"}')
+    
+    time.sleep(2)
 
 def SendMessageThreadTwo():
     while True:
@@ -56,8 +58,8 @@ def SendMessageThreadTwo():
 
 
 websocket.enableTrace(True)
-# ws = websocket.WebSocketApp("wss://fleetcoordination-zumi-cars.herokuapp.com/", on_message = on_message, on_close = on_close)
-ws = websocket.WebSocketApp("ws://192.168.178.108:3000/", on_message = on_message, on_close = on_close)
+ws = websocket.WebSocketApp("wss://fleetcoordination-zumi-cars.herokuapp.com/", on_message = on_message, on_close = on_close)
+# ws = websocket.WebSocketApp("ws://192.168.178.108:3000/", on_message = on_message, on_close = on_close)
 
 # Start websocket client
 wst = threading.Thread(target=ws.run_forever)

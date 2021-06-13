@@ -20,7 +20,7 @@ vision = Vision()
 screen=Screen()
 
 IRB = 120
-speed = 30
+speed = 20
 zumiID = "2" # Tims Zumi -> ID "1", Denis Zumi -> ID "2"
 zumiMap = None
 calculatedPath = []
@@ -75,6 +75,7 @@ def DriveManager():
     global nextCrossing
     global qrmessage
     global scanRoute
+    global endCrossing
     
     while True:
         if qrmessage != "":
@@ -91,7 +92,8 @@ def DriveManager():
             dirnumber = getCrossingDirection()
             #abgleich mit anderem auto
             print("dirnumber:" + str(dirnumber))
-            #lock
+            #lock ?
+
             if dirnumber == 0:
                 turningFunctions.turnLeft()
             elif dirnumber == 1:
@@ -103,18 +105,18 @@ def DriveManager():
             currentheading = calculatedPath[0]['direction']
             lastCrossing = calculatedPath[0]['currentCrossing']
             nextCrossing = calculatedPath[0]['nextCrossing']
-            msgee = json.dumps({"zumiId" : zumiID, "currentCrossing" : lastCrossing, "nextCrossing" : nextCrossing, "direction" : currentheading})
-            # msgtst = '{"zumiId" : ' + zumiID + ', "currentCrossing" : '  + lastCrossing + ', nextCrossing : ' + nextCrossing + ',direction :' + currentheading  + ' }'
-            print("Send Zumi Position " + msgee)
-            ws.send(msgee)
+            
+            msgPos = json.dumps({"zumiId" : zumiID, "currentCrossing" : lastCrossing, "nextCrossing" : nextCrossing, "direction" : currentheading})
+            print("Send Zumi Position " + msgPos)
+            ws.send(msgPos)
 
             calculatedPath.pop(0)
 
             if len(calculatedPath) == 0:
-                msgxx = json.dumps({"release" : nextCrossing})
+                msgRe = json.dumps({"release" : nextCrossing})
                 # msg = '{release : ' + nextCrossing + '}'
-                print("Release Zumi Target " + msgxx)
-                ws.send(msgxx)
+                print("Release Zumi Target " + msgRe)
+                ws.send(msgRe)
 
 
             inCrossing = False
@@ -149,7 +151,8 @@ def ServerThread():
     while True:
         print("Warte auf Instruktionen...")
         while startDirection == '' or startCrossing == '' or endCrossing == '':
-            pass
+            ws.send(" ")
+            time.sleep(2)
         print("Instruktion eingegangen!")
         
         # startDirection = 'East'
@@ -218,8 +221,8 @@ def GoStraight():
         
 # print(data.get("id"))
 def on_message(ws, message):
-    print(message)
-    
+    # print(message)
+
     # prüfe ob Message ein JSON-String ist
     try:
         json.loads(message)
@@ -228,14 +231,38 @@ def on_message(ws, message):
         return
 
     jsonMessage = json.loads(message)
-        
+    global endCrossing 
     if("id" in jsonMessage and "isTarget" in jsonMessage):
         print(jsonMessage["id"])
         
         if(jsonMessage["isTarget"] == True):
             print("Ziel ist auf " + jsonMessage["id"] + " gesetzt!")
-            global endCrossing 
+            
             endCrossing = jsonMessage["id"]
+
+    if("id" in jsonMessage and "isBlocked" in jsonMessage):
+        global zumiMap
+        global calculatedPath
+        if jsonMessage["isBlocked"] == True:    
+            crossing = jsonMessage["id"]
+            crossing = list(crossing)
+            if(len(crossing) < 2):
+                return
+            print("Setzte Sperre für Strecke: " + jsonMessage["id"])
+            zumiMap.SetLockForStreet(crossing[0], crossing[1])
+            with lock:
+                if(len(calculatedPath) > 0):
+                    for path in calculatedPath:
+                        if(path["currentCrossing"] == crossing[0] and path["nextCrossing"] == crossing[1]):
+                            calculatedPath = zumiMap.CalculatePath(currentheading, crossing[1], endCrossing)
+
+        else:
+            crossing = jsonMessage["id"]
+            crossing = list(crossing)
+            if(len(crossing) < 2):
+                return
+            zumiMap.ReleaseLockForStreet(crossing[0], crossing[1])
+        
 
     if("zumiId" in jsonMessage and "id" in jsonMessage and "direction" in jsonMessage):
         if(jsonMessage["zumiId"] == zumiID):
@@ -244,10 +271,14 @@ def on_message(ws, message):
             global startDirection
             crossing = jsonMessage["id"]
             crossing = list(crossing)
+            if(len(crossing) < 2):
+                return
             crossing.reverse()
             startCrossing = crossing[0]
             startDirection = jsonMessage["direction"]
             print("Die nächste Kreuzung des Zumis ist: " + startCrossing + ", " + startDirection)
+
+    
 
 
 
@@ -271,6 +302,11 @@ while not ws.sock.connected and conn_timeout:
     time.sleep(1)
     conn_timeout -= 1
 
+print("Warte auf setzen der Position")
+while startCrossing == '' and startDirection == '':
+    ws.send(json.dumps({"zumiId" : zumiID, "getOtherPosition" : "false"}))
+    time.sleep(3)
+    pass
 
 turningFunctions = tf.turningFunctions(zumi, screen, time)
 thread = threading.Thread(target = ServerThread)

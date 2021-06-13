@@ -165,14 +165,28 @@ wsServer.on('connection', ws => {
                 && body.hasOwnProperty('getOtherPosition')
                 && !body.hasOwnProperty('nextCrossing')
                 && !body.hasOwnProperty('direction')){
-                    if(body.GetOtherPosition == "false") return;
-                    console.log(trafficControlDb({zumiId : {"!is" : body.zumiId}}).stringify());
-                    var currCrossing = trafficControlDb({zumiId : {"!is" : body.zumiId}}).select("currentCrossing")[0];
-                    var nxtCrossing = trafficControlDb({zumiId : {"!is" : body.zumiId}}).select("nextCrossing")[0];
-                    var jsonResponse = {currentCrossing : currCrossing, nextCrossing : nxtCrossing};
-                    console.log(jsonResponse);
-                    ws.send(JSON.stringify(jsonResponse));
-                }
+
+                    if(body.GetOtherPosition == "true"){
+                        console.log(trafficControlDb({zumiId : {"!is" : body.zumiId}}).stringify());
+                        var currCrossing = trafficControlDb({zumiId : {"!is" : body.zumiId}}).select("currentCrossing")[0];
+                        var nxtCrossing = trafficControlDb({zumiId : {"!is" : body.zumiId}}).select("nextCrossing")[0];
+                        var dir = trafficControlDb({zumiId : {"!is" : body.zumiId}}).select("direction")[0];
+                        var jsonResponse = {zumiId : body.zumiId, id : currCrossing + nxtCrossing, direction : dir};
+                        console.log(jsonResponse);
+                        ws.send(JSON.stringify(jsonResponse));
+                    }
+                    else{
+                        console.log(trafficControlDb({zumiId :  body.zumiId}).stringify());
+                        var currCrossing = trafficControlDb({zumiId :  body.zumiId}).select("currentCrossing")[0];
+                        var nxtCrossing = trafficControlDb({zumiId : body.zumiId}).select("nextCrossing")[0];
+                        var dir = trafficControlDb({zumiId : body.zumiId}).select("direction")[0];
+    
+                        var jsonResponse = {zumiId : body.zumiId, id : currCrossing + nxtCrossing, direction : dir};
+                        console.log(jsonResponse);
+                        ws.send(JSON.stringify(jsonResponse));
+                    }
+        }
+               
     });
   });
 
