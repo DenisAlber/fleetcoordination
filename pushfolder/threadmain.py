@@ -27,16 +27,17 @@ calculatedPath = []
 inCrossing = False
 scanRoute = False
 qrmessage = ""
-currentheading = None
-lastCrossing = None
-nextCrossing = None
+currentheading = ''
+lastCrossing = ''
+nextCrossing = ''
 messagelist = list()
 lock = threading.Lock()
 
-#
-startDirection = ''
-startCrossing = ''
+# init
+# startDirection = ''
+# startCrossing = ''
 endCrossing = ''
+backedUpEndCrossing =''
 
 
 def QRCapture():
@@ -46,11 +47,12 @@ def QRCapture():
     global scanRoute
     while True: 
 
+        print("Kamera ist an!")
         while scanRoute:
+            pass
             #frame = camera.capture()
             #qr_code = vision.find_QR_code(frame)
             #message = vision.get_QR_message(qr_code)
-            print("Kamera ist an!")
 
             # if(message != None):
             #     global qrmessage
@@ -59,12 +61,10 @@ def QRCapture():
             #     qrmessage = message
                 
         # camera.close()
+        print("Kamera ist aus")
         while scanRoute == False:
-            print("Kamera ist aus")
+            pass
         #camera.start_camera()
-
-
-
 
 def DriveManager():
     
@@ -124,15 +124,6 @@ def DriveManager():
             #lock aufheben
     print("while over")
             
-
-
-
-
-            
-
-    
-
-
 def ServerThread():
     global zumiMap
     zumiMap = gr.Graph()
@@ -144,13 +135,14 @@ def ServerThread():
     """
     global currentheading
     global calculatedPath
-    global startDirection
-    global startCrossing
+    # global startDirection
+    global nextCrossing
     global endCrossing
+    global backedUpEndCrossing
 
     while True:
         print("Warte auf Instruktionen...")
-        while startDirection == '' or startCrossing == '' or endCrossing == '':
+        while currentheading == '' or nextCrossing == '' or endCrossing == '':
             ws.send(" ")
             time.sleep(2)
         print("Instruktion eingegangen!")
@@ -158,9 +150,9 @@ def ServerThread():
         # startDirection = 'East'
         # startCrossing = 'A'
         # endCrossing = 'C'
-        currentheading = startDirection
-        calculatedPath = zumiMap.CalculatePath(startDirection,startCrossing,endCrossing)
-
+        # currentheading = startDirection
+        calculatedPath = zumiMap.CalculatePath(currentheading,nextCrossing,endCrossing)
+        backedUpEndCrossing = endCrossing
         endCrossing = ''
     
 
@@ -232,6 +224,10 @@ def on_message(ws, message):
 
     jsonMessage = json.loads(message)
     global endCrossing 
+    global nextCrossing
+    global currentheading
+    global backedUpEndCrossing
+
     if("id" in jsonMessage and "isTarget" in jsonMessage):
         print(jsonMessage["id"])
         
@@ -252,9 +248,14 @@ def on_message(ws, message):
             zumiMap.SetLockForStreet(crossing[0], crossing[1])
             with lock:
                 if(len(calculatedPath) > 0):
+                    isMemberOfCalculatedPath = False
                     for path in calculatedPath:
                         if(path["currentCrossing"] == crossing[0] and path["nextCrossing"] == crossing[1]):
-                            calculatedPath = zumiMap.CalculatePath(currentheading, crossing[1], endCrossing)
+                            isMemberOfCalculatedPath = True
+                    if isMemberOfCalculatedPath:
+                        calculatedPath = zumiMap.CalculatePath(currentheading, nextCrossing, backedUpEndCrossing) # endcrossing neu bestimmen
+                        print("Neuer Pfad: ")
+                        print(calculatedPath)
 
         else:
             crossing = jsonMessage["id"]
@@ -267,16 +268,14 @@ def on_message(ws, message):
     if("zumiId" in jsonMessage and "id" in jsonMessage and "direction" in jsonMessage):
         if(jsonMessage["zumiId"] == zumiID):
             print("Setze Zumi Position..")
-            global startCrossing
-            global startDirection
             crossing = jsonMessage["id"]
             crossing = list(crossing)
             if(len(crossing) < 2):
                 return
             crossing.reverse()
-            startCrossing = crossing[0]
-            startDirection = jsonMessage["direction"]
-            print("Die nächste Kreuzung des Zumis ist: " + startCrossing + ", " + startDirection)
+            nextCrossing = crossing[0]
+            currentheading = jsonMessage["direction"]
+            print("Die nächste Kreuzung des Zumis ist: " + nextCrossing + ", " + currentheading)
 
     
 
@@ -303,7 +302,7 @@ while not ws.sock.connected and conn_timeout:
     conn_timeout -= 1
 
 print("Warte auf setzen der Position")
-while startCrossing == '' and startDirection == '':
+while nextCrossing == '' and currentheading == '':
     ws.send(json.dumps({"zumiId" : zumiID, "getOtherPosition" : "false"}))
     time.sleep(3)
     pass

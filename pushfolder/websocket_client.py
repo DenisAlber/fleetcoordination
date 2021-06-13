@@ -45,8 +45,8 @@ def SendMessageThread():
         # ws.send('{"zumiId":"1", "getOtherPosition" : "true"}')
 
         # release target
-    # ws.send('{"release" : "F"}')
-    ws.send('{"zumiId" : "2", "getOtherPosition" : "false"}')
+    ws.send('{"release" : "C"}')
+    # ws.send('{"zumiId" : "2", "getOtherPosition" : "false"}')
     
     time.sleep(2)
 
