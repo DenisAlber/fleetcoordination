@@ -129,11 +129,7 @@ wsServer.on('connection', ws => {
         }
         // release target
         else if(body.hasOwnProperty('release')){
-            db({name : body.release}).update({isTarget : false});
-            var jsonResponse = {id : body.release, isTarget : false};
-            wsServer.clients.forEach(function each(client){
-                client.send(JSON.stringify(jsonResponse));
-            })
+            ReleaseTarget(body);
         }
         // set Zumi-Cars position
         else if(body.hasOwnProperty('zumiId')
@@ -141,16 +137,7 @@ wsServer.on('connection', ws => {
                 && body.hasOwnProperty('nextCrossing')
                 && body.hasOwnProperty('direction')){
 
-            trafficControlDb({zumiId : body.zumiId})
-                .update({currentCrossing : body.currentCrossing, nextCrossing : body.nextCrossing, direction : body.direction});
-            console.log(trafficControlDb().stringify());
-            
-            var jsonResponse = {zumiId : body.zumiId, id : body.currentCrossing + body.nextCrossing, direction : body.direction};
-
-            wsServer.clients.forEach(function each(client){
-                client.send(JSON.stringify(jsonResponse));
-            })
-
+                    SetZumiPosition(body);
         }
         // check whether the car is allowed to turn at a crossing, according to the gerneral traffic rules
         else if(body.hasOwnProperty('zumiId')
@@ -158,34 +145,16 @@ wsServer.on('connection', ws => {
                 && !body.hasOwnProperty('direction')
                 && !body.hasOwnProperty('getOtherPosition')){
             
-            var jsonResponse = {canDrive : CanDrive(body).toString()};
-            ws.send(JSON.stringify(jsonResponse));
+                    var jsonResponse = {canDrive : CanDrive(body).toString()};
+                    ws.send(JSON.stringify(jsonResponse));
         }
         // Zumi-Cars gets other Cars position or its own position
         else if(body.hasOwnProperty('zumiId')
                 && body.hasOwnProperty('getOtherPosition')
                 && !body.hasOwnProperty('nextCrossing')
                 && !body.hasOwnProperty('direction')){
-
-                    if(body.GetOtherPosition == "true"){
-                        console.log(trafficControlDb({zumiId : {"!is" : body.zumiId}}).stringify());
-                        var currCrossing = trafficControlDb({zumiId : {"!is" : body.zumiId}}).select("currentCrossing")[0];
-                        var nxtCrossing = trafficControlDb({zumiId : {"!is" : body.zumiId}}).select("nextCrossing")[0];
-                        var dir = trafficControlDb({zumiId : {"!is" : body.zumiId}}).select("direction")[0];
-                        var jsonResponse = {zumiId : body.zumiId, id : currCrossing + nxtCrossing, direction : dir};
-                        console.log(jsonResponse);
-                        ws.send(JSON.stringify(jsonResponse));
-                    }
-                    else{
-                        console.log(trafficControlDb({zumiId :  body.zumiId}).stringify());
-                        var currCrossing = trafficControlDb({zumiId :  body.zumiId}).select("currentCrossing")[0];
-                        var nxtCrossing = trafficControlDb({zumiId : body.zumiId}).select("nextCrossing")[0];
-                        var dir = trafficControlDb({zumiId : body.zumiId}).select("direction")[0];
-    
-                        var jsonResponse = {zumiId : body.zumiId, id : currCrossing + nxtCrossing, direction : dir};
-                        console.log(jsonResponse);
-                        ws.send(JSON.stringify(jsonResponse));
-                    }
+            
+                    GetOwnOrOtherZumiPosition(ws, body);
         }
                
     });
