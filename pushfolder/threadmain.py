@@ -124,7 +124,7 @@ def DriveManager():
             #lock aufheben
     print("while over")
             
-def ServerThread():
+def Instructor():
     global zumiMap
     zumiMap = gr.Graph()
     zumiMap = pm.initPersonalMap(zumiMap)
@@ -308,7 +308,7 @@ while nextCrossing == '' and currentheading == '':
     pass
 
 turningFunctions = tf.turningFunctions(zumi, screen, time)
-thread = threading.Thread(target = ServerThread)
+thread = threading.Thread(target = Instructor)
 thread2 = threading.Thread(target = DriveManager)
 # thread3 = threading.Thread(target= QRCapture)
 thread.start()
