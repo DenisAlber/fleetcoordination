@@ -80,12 +80,15 @@ def DriveManager():
     while True:
         if qrmessage != "":
             break
+        if len(calculatedPath) == 0:
+            inCrossing = False
+            scanRoute = False
         if len(calculatedPath) > 0 and inCrossing == False:
             
             print(inCrossing)
             GoStraight()
             inCrossing = True
-            scanRoute = True
+            scanRoute = False
             #checkIfAbb
         if len(calculatedPath) > 0 and inCrossing == True:
 
@@ -128,11 +131,7 @@ def Instructor():
     global zumiMap
     zumiMap = gr.Graph()
     zumiMap = pm.initPersonalMap(zumiMap)
-    """
-    global startDirection
-    global startCrossing
-    global endCrossing
-    """
+    
     global currentheading
     global calculatedPath
     # global startDirection
