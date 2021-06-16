@@ -5,7 +5,7 @@ const router = express.Router();
 const WebSocket = require('ws');
 TAFFY = require('taffy');
 
-// Create a new database using a JSON string
+// Create a new db table for map, using a JSON string
 var db = TAFFY([
   {name: "A", x: 150, y: 100, r: 50, isTarget : false,"connections" : [
     { connected: "B", blocked: false }, // key blocked : true/false?
@@ -66,6 +66,7 @@ var db = TAFFY([
 }
 ]);
 
+// creating db table for trafficControl
 var trafficControlDb = TAFFY([
     {zumiId : "1", currentCrossing : "", nextCrossing : "", direction : ""},
     {zumiId : "2", currentCrossing : "", nextCrossing : "", direction : ""}
@@ -85,19 +86,20 @@ router.get('/', (req, res) => {
   res.render('public/index.html', {root: __dirname});
 });
 
-// For resetting target
+// for resetting target
 // JSON String should be {id: 'A'}
 app.post('/zumi', (req, res) =>{
     db({name : req.body.id}).update({isTarget : false});
 });
 
+// returns the map
 app.get('/GetMap', (req, res) => {
   let json = `[{"nodes" : ${db().stringify()}}, {"traffic" : ${trafficControlDb().stringify()}}]`;
   res.send(json);
 });
 
 
-// WebSocket
+// WebSocket connection
 const wsServer = new WebSocket.Server({ noServer: true });
 wsServer.on('connection', ws => {
 
@@ -106,30 +108,26 @@ wsServer.on('connection', ws => {
     ws.on('message', message => 
     {
         // keep alive ping for heroku application
-        // the heroku app goes off after 10 min when no receives any data
+        // the heroku app goes off after 10-30 min when not receives any data
         try{
             JSON.parse(message);
         }
         catch
         {
-            if(message == " ") {
-            // ws.send("pong")
             return;
-            }
         }
-        let body = JSON.parse(message)
+        
+        let body = JSON.parse(message)  // parse to JSON-String
+
+        // set or release lock
         if(body.hasOwnProperty('node1') && body.hasOwnProperty('node2')){
-            // trafficControlDb().forEach(element=>{
-                // if(element.select("currentCrossing") == body.node1
-                //     && element.select("nextCrossing") == body.node2){
-                //         ws.send("Can't lock position where a Zu")
-                //     }
-            // })
-            SetLock(ws, body.node1, body.node2);
+            SetOrReleaseLock(ws, body.node1, body.node2);
         }
+        // set target
         else if(body.hasOwnProperty('target')){
             SetTarget(ws, body.target);
         }
+        // release target
         else if(body.hasOwnProperty('release')){
             db({name : body.release}).update({isTarget : false});
             var jsonResponse = {id : body.release, isTarget : false};
@@ -137,6 +135,7 @@ wsServer.on('connection', ws => {
                 client.send(JSON.stringify(jsonResponse));
             })
         }
+        // set Zumi-Cars position
         else if(body.hasOwnProperty('zumiId')
                 && body.hasOwnProperty('currentCrossing')  
                 && body.hasOwnProperty('nextCrossing')
@@ -153,6 +152,7 @@ wsServer.on('connection', ws => {
             })
 
         }
+        // check whether the car is allowed to turn at a crossing, according to the gerneral traffic rules
         else if(body.hasOwnProperty('zumiId')
                 && !body.hasOwnProperty('nextCrossing')
                 && !body.hasOwnProperty('direction')
@@ -161,6 +161,7 @@ wsServer.on('connection', ws => {
             var jsonResponse = {canDrive : CanDrive(body).toString()};
             ws.send(JSON.stringify(jsonResponse));
         }
+        // Zumi-Cars gets other Cars position or its own position
         else if(body.hasOwnProperty('zumiId')
                 && body.hasOwnProperty('getOtherPosition')
                 && !body.hasOwnProperty('nextCrossing')
@@ -190,6 +191,8 @@ wsServer.on('connection', ws => {
     });
   });
 
+// Check if car can drive on crossing. 
+// returns true or false
 function CanDrive(body){
     console.log("Zumi-ID " + body.zumiId );
     if(trafficControlDb({zumiId : body.zumiId}).select("nextCrossing")[0] == "" 
@@ -203,6 +206,7 @@ function CanDrive(body){
     return crossingRules(trafficControlDb({zumiId : body.zumiId}).select("direction")[0], trafficControlDb({zumiId : {"!is" : body.zumiId}}).select("direction")[0]);
 }
 
+// simplified traffic rules
 function crossingRules(thisDirection, otherDirection){
     // cars are on the opposite sides
     console.log("this direction " + thisDirection);
@@ -221,7 +225,9 @@ function crossingRules(thisDirection, otherDirection){
     return false;
 }
 
-function SetLock(ws, firstNode, secondNode){
+// set or release lock for street
+// the message will be send to all clients 
+function SetOrReleaseLock(ws, firstNode, secondNode){
     console.log("locking street...")
     var nodeConnection = db({name : firstNode}).first().connections;
     nodeConnection.forEach(element => {
@@ -253,6 +259,7 @@ function SetLock(ws, firstNode, secondNode){
     db({name : firstNode}).update({connections : nodeConnection});
 }
 
+// set Targets for Zumi
 function SetTarget(ws, node){
     let targets = db({isTarget : true}).get();
     if(Object.keys(targets).length != 0){
@@ -268,10 +275,59 @@ function SetTarget(ws, node){
     })
 }
 
+function ReleaseTarget(body){
+    db({name : body.release}).update({isTarget : false});
+    var jsonResponse = {id : body.release, isTarget : false};
+    wsServer.clients.forEach(function each(client){
+        client.send(JSON.stringify(jsonResponse));
+    })
+}
+
+function SetZumiPosition(body){
+    trafficControlDb({zumiId : body.zumiId})
+    .update({currentCrossing : body.currentCrossing, nextCrossing : body.nextCrossing, direction : body.direction});
+    console.log(trafficControlDb().stringify());
+
+    var jsonResponse = {zumiId : body.zumiId, id : body.currentCrossing + body.nextCrossing, direction : body.direction};
+
+    wsServer.clients.forEach(function each(client){
+        client.send(JSON.stringify(jsonResponse));
+    })
+}
+
+function GetOwnOrOtherZumiPosition(ws, body){
+    if(body.GetOtherPosition == "true"){
+        console.log(trafficControlDb({zumiId : {"!is" : body.zumiId}}).stringify());
+        var currCrossing = trafficControlDb({zumiId : {"!is" : body.zumiId}}).select("currentCrossing")[0];
+        var nxtCrossing = trafficControlDb({zumiId : {"!is" : body.zumiId}}).select("nextCrossing")[0];
+        var dir = trafficControlDb({zumiId : {"!is" : body.zumiId}}).select("direction")[0];
+        var jsonResponse = {zumiId : body.zumiId, id : currCrossing + nxtCrossing, direction : dir};
+        console.log(jsonResponse);
+        ws.send(JSON.stringify(jsonResponse));
+    }
+    else{
+        console.log(trafficControlDb({zumiId :  body.zumiId}).stringify());
+        var currCrossing = trafficControlDb({zumiId :  body.zumiId}).select("currentCrossing")[0];
+        var nxtCrossing = trafficControlDb({zumiId : body.zumiId}).select("nextCrossing")[0];
+        var dir = trafficControlDb({zumiId : body.zumiId}).select("direction")[0];
+
+        var jsonResponse = {zumiId : body.zumiId, id : currCrossing + nxtCrossing, direction : dir};
+        console.log(jsonResponse);
+        ws.send(JSON.stringify(jsonResponse));
+    }
+}
+
+function GetMap(){
+    let json = `[{"nodes" : ${db().stringify()}}, {"traffic" : ${trafficControlDb().stringify()}}]`;
+    return json;
+}
+
+// start server
 const server = app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`);
 });
 
+// start WebSocket connectability through ws:// or wss://
 server.on('upgrade', (request, socket, head) => {
     wsServer.handleUpgrade(request, socket, head, socket => {
       wsServer.emit('connection', socket, request);
