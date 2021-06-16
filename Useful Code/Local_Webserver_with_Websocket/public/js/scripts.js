@@ -4,13 +4,13 @@
 * Licensed under MIT (https://github.com/StartBootstrap/startbootstrap-bare/blob/master/LICENSE)
 */
 
-var webSocket = new WebSocket('wss://fleetcoordination-zumi-cars.herokuapp.com'); // evtl. anpassen..
+var webSocket = new WebSocket('wss://fleetcoordination-zumi-cars.herokuapp.com'); 
 var tmpZumiOneLine;
 var tmpZumiTwoLine;
 // var webSocket = new WebSocket('ws://192.168.178.108:3000')
 $(document).ready(function () {
 
-
+    // open connection with server
     webSocket.onopen = function (event) {};
 
     webSocket.onmessage = function (event) {
@@ -33,9 +33,11 @@ $(document).ready(function () {
         console.log(JSON.parse(event.data));
         var dat = JSON.parse(event.data);
 
+        // manipulate line color if isBlocked is true
         if(dat.hasOwnProperty('isBlocked')){
+            
             var svg = d3.select("svg");
-            var line = svg.select(`#${dat.id}`);
+            var line = svg.select(`#${dat.id}`);    // find object line by id in DOM Object
             
             if(dat.isBlocked){
                 line.style("stroke", "red");
@@ -43,10 +45,10 @@ $(document).ready(function () {
             else{
                 line.style("stroke", "grey");
             }
-        }
-        else if(dat.hasOwnProperty('isTarget')){
+        }   
+        else if(dat.hasOwnProperty('isTarget')){    // manipulate circle if isTarget is true
             var svg = d3.select("svg");
-            var circle = svg.select(`#${dat.id}`);
+            var circle = svg.select(`#${dat.id}`);  // find object circle by id in DOM Object
             
             if(dat.isTarget){
                 circle.style("fill", "rgb(68, 201, 164)");
@@ -54,8 +56,8 @@ $(document).ready(function () {
             else{
                 circle.style("fill", "rgb(49, 210, 242)");
             }
-        }
-        else if(dat.hasOwnProperty('zumiId')){
+        }   
+        else if(dat.hasOwnProperty('zumiId')){      // Set Zumi on a line with a specific color
             if(dat.zumiId == "1"){
                 var svg = d3.select("svg");
                 var line = svg.select(`#${dat.id}`);
@@ -77,11 +79,13 @@ $(document).ready(function () {
         }
      };
 
+     // get map and traffic from Server
     $.get("/GetMap", function(data){
         console.log(JSON.parse(data));
         
-        buildSVG(JSON.parse(data)[0]);
+        buildSVG(JSON.parse(data)[0]);      // build SVG 
 
+        // check if Zumi has a position
         var zumidatadb = JSON.parse(data)[1].traffic;
         console.log(zumidatadb);
         if(zumidatadb[0].currentCrossing != "" && zumidatadb[0].nextCrossing != ""){
@@ -94,6 +98,7 @@ $(document).ready(function () {
     });
 })
 
+// Set line color to specific zumi color
 function SetStreetToZumiColor(zumiId, id){
     if(zumiId == "1"){
         var svg = d3.select("svg");
@@ -115,6 +120,7 @@ function SetStreetToZumiColor(zumiId, id){
     }
 }
 
+// Set Zumi to a position
 $("#setZumiPos").click(() => {
     var id = $("#zumiID").val();
     var pos = $("#zumiPosition").val().trim().toUpperCase().split('');
@@ -160,6 +166,7 @@ $("#setZumiPos").click(() => {
 
 function noop(){}
 
+// keep-alive ping
 const ping = function() {
     // console.log("ping");
     webSocket.send(" ");
@@ -178,7 +185,7 @@ function buildSVG(graph){
             .attr("width", width)
             .attr("height", height).call(responsivefy);
 
-    // add all lines from graph to g
+    // add all lines from graph to svg in d3Class div
     graph.nodes.forEach(element => {
         // console.log(element.connections.length);
         var connectedNode;
@@ -248,7 +255,8 @@ function buildSVG(graph){
                 secondLine.attr('y1', parseInt(secondLine.attr('y1')) - 20);
                 secondLine.attr('y2', parseInt(secondLine.attr('y2')) - 20);
             }
-
+            
+            // check for overlapping vertical lines 
             if(firstLine.attr('x1') == secondLine.attr('x2') 
             && firstLine.attr('x2') == secondLine.attr('x1') 
             && firstLine.attr('y1') == secondLine.attr('y2')
@@ -256,9 +264,11 @@ function buildSVG(graph){
             && firstLine.attr('y1') != secondLine.attr('y1')
             )
             {
+                // move first line left
                 firstLine.attr('x1', parseInt(firstLine.attr('x1')) - 20);
                 firstLine.attr('x2', parseInt(firstLine.attr('x2')) - 20);
-
+                
+                // move second line right
                 secondLine.attr('x1', parseInt(secondLine.attr('x1')) + 20);
                 secondLine.attr('x2', parseInt(secondLine.attr('x2')) + 20);
             }
@@ -293,9 +303,9 @@ function buildSVG(graph){
             return d.name;
         })
         .on("click", function(d, i){
-            // send command to go to specific node
             console.log("Send go to..");
             var transaction = { target : i.name };
+            // send command to go to specific node
             webSocket.send(JSON.stringify(transaction));
         });
 
