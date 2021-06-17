@@ -32,6 +32,7 @@ lastCrossing = ''
 nextCrossing = ''
 messagelist = list()
 lock = threading.Lock()
+canDrive = "false"
 
 # init
 # startDirection = ''
@@ -76,6 +77,7 @@ def DriveManager():
     global qrmessage
     global scanRoute
     global endCrossing
+    global canDrive
     
     while True:
         if qrmessage != "":
@@ -92,10 +94,16 @@ def DriveManager():
             #checkIfAbb
         if len(calculatedPath) > 0 and inCrossing == True:
 
+            # überprüfe ob das Auto fahren darf
+            while(canDrive == "false"):
+                ws.send(json.dumps({"zumiId" : zumiID}))
+                time.sleep(1)
+                pass
+
+            canDrive = "false"
+                
             dirnumber = getCrossingDirection()
-            #abgleich mit anderem auto
             print("dirnumber:" + str(dirnumber))
-            #lock ?
 
             if dirnumber == 0:
                 turningFunctions.turnLeft()
@@ -212,21 +220,22 @@ def GoStraight():
         
 # print(data.get("id"))
 def on_message(ws, message):
-    # print(message)
-
-    # prüfe ob Message ein JSON-String ist
+    # Prüfe ob Message ein JSON-String ist
     try:
         json.loads(message)
     except ValueError:
+        # Wenn die Message kein JSON-String ist wird die Message in der Konsole ausgegeben
         print(message)
         return
 
-    jsonMessage = json.loads(message)
+    jsonMessage = json.loads(message) # Message wird zu JSON-String geparsed
     global endCrossing 
     global nextCrossing
     global currentheading
     global backedUpEndCrossing
+    global canDrive
 
+    # Wenn der String "isTarget" enhält, setze endCrossing mit der id
     if("id" in jsonMessage and "isTarget" in jsonMessage):
         print(jsonMessage["id"])
         
@@ -235,6 +244,7 @@ def on_message(ws, message):
             
             endCrossing = jsonMessage["id"]
 
+    # Wenn der String "isBlocked" enthält, sperre oder entsperre die Straße mit der entsprechenden id
     if("id" in jsonMessage and "isBlocked" in jsonMessage):
         global zumiMap
         global calculatedPath
@@ -263,7 +273,7 @@ def on_message(ws, message):
                 return
             zumiMap.ReleaseLockForStreet(crossing[0], crossing[1])
         
-
+    # Wenn die Zumi-Position über den Verkehrsleitrechner gesetzt wurde, setzte diese auch hier
     if("zumiId" in jsonMessage and "id" in jsonMessage and "direction" in jsonMessage):
         if(jsonMessage["zumiId"] == zumiID):
             print("Setze Zumi Position..")
@@ -275,12 +285,18 @@ def on_message(ws, message):
             nextCrossing = crossing[0]
             currentheading = jsonMessage["direction"]
             print("Die nächste Kreuzung des Zumis ist: " + nextCrossing + ", " + currentheading)
+    
+    # Wenn das Zumi-Car fahren darf der Wert true
+    if("canDrive" in jsonMessage):
+        print("candrive is: " + jsonMessage["canDrive"])
+        canDrive = jsonMessage["canDrive"]
+
 
     
 
 
 
-
+# Wird ausgeführt wenn die Connection geschlossen wurde
 def on_close(ws):
     print("### closed ###")
 
@@ -306,10 +322,15 @@ while nextCrossing == '' and currentheading == '':
     time.sleep(3)
     pass
 
+# initialisiere turning functions
 turningFunctions = tf.turningFunctions(zumi, screen, time)
+
+# initalisiere threads
 thread = threading.Thread(target = Instructor)
 thread2 = threading.Thread(target = DriveManager)
 # thread3 = threading.Thread(target= QRCapture)
+
+# starte threads
 thread.start()
 thread2.start()
 # thread3.start()
