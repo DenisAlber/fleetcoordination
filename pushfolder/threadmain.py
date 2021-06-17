@@ -40,32 +40,36 @@ canDrive = "false"
 endCrossing = ''
 backedUpEndCrossing =''
 
-
+# Für die QR-Code erkennung
 def QRCapture():
+    global lastCrossing
+    global nextCrossing
     camera = Camera()
     #camera.start_camera()
 
     global scanRoute
-    while True: 
 
+    while True:     
         print("Kamera ist an!")
-        while scanRoute:
-            pass
-            #frame = camera.capture()
-            #qr_code = vision.find_QR_code(frame)
-            #message = vision.get_QR_message(qr_code)
+        # Wird ausgeführt solange das Zumi-Car fährt
+        while scanRoute:    
+            frame = camera.capture()                    # Nehme Bild auf
+            qr_code = vision.find_QR_code(frame)        # Suche QR-Code im Bild
+            message = vision.get_QR_message(qr_code)    # Hole QR-Code Message
 
-            # if(message != None):
-            #     global qrmessage
-            #     print(str(message))
-            #     zumi.stop()
-            #     qrmessage = message
+            if(message != None):
+                global qrmessage
+                print(str(message))
+                zumi.stop()
+                qrmessage = message
+                # Sende Straßensperre
+                ws.send(json.dumps({"node1" : lastCrossing, "node2" : nextCrossing}))
                 
-        # camera.close()
+        camera.close()
         print("Kamera ist aus")
         while scanRoute == False:
             pass
-        #camera.start_camera()
+        camera.start_camera()
 
 def DriveManager():
     
@@ -328,9 +332,9 @@ turningFunctions = tf.turningFunctions(zumi, screen, time)
 # initalisiere threads
 thread = threading.Thread(target = Instructor)
 thread2 = threading.Thread(target = DriveManager)
-# thread3 = threading.Thread(target= QRCapture)
+thread3 = threading.Thread(target= QRCapture)
 
 # starte threads
 thread.start()
 thread2.start()
-# thread3.start()
+thread3.start()
