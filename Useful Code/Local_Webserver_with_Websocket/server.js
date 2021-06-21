@@ -1,11 +1,11 @@
 const express = require('express');
-const app = express();
+const app = express(); 
 const port = process.env.PORT || 3000;
 const router = express.Router(); 
 const WebSocket = require('ws');
 TAFFY = require('taffy');
 
-// Create a new db table for map, using a JSON string
+// Create a new db table for map, using a JSON String
 var db = TAFFY([
   {name: "A", x: 150, y: 100, r: 50, isTarget : false,"connections" : [
     { connected: "B", blocked: false }, // key blocked : true/false?
@@ -86,13 +86,7 @@ router.get('/', (req, res) => {
   res.render('public/index.html', {root: __dirname});
 });
 
-// for resetting target
-// JSON String should be {id: 'A'}
-app.post('/zumi', (req, res) =>{
-    db({name : req.body.id}).update({isTarget : false});
-});
-
-// returns the map
+// returns map and trafficControl
 app.get('/GetMap', (req, res) => {
   let json = `[{"nodes" : ${db().stringify()}}, {"traffic" : ${trafficControlDb().stringify()}}]`;
   res.send(json);
