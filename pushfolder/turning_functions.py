@@ -51,12 +51,12 @@ def fixZumiPosition(lastCrossing,nextCrossing):
         zumi.play_note(30+x, note_duration=100)
         time.sleep(0.1)
     screen.clear_display()
-    for x in range(15):
+    for x in range(8):
 
         if lastCrossing != None:
-            screen.draw_text("Relocate between "+lastCrossing+ " and "+nextCrossing+" in " + str(15-x)+"s")
+            screen.draw_text("Relocate between "+lastCrossing+ " and "+nextCrossing+" in " + str(8-x)+"s")
         elif lastCrossing == None:
-            screen.draw_text("Place Zumi at    Start in "+ str(15-x) + "s")
+            screen.draw_text("Place Zumi at    Start in "+ str(8-x) + "s")
         time.sleep(1.0)
         
     screen.clear_display()
