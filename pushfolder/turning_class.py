@@ -57,12 +57,12 @@ class turningFunctions:
             self.zumi.play_note(30+x, note_duration=100)
             self.time.sleep(0.1)
         self.screen.clear_display()
-        for x in range(15):
+        for x in range(8):
 
             if lastCrossing != None:
-                self.screen.draw_text("Relocate between "+lastCrossing+ " and "+nextCrossing+" in " + str(15-x)+"s")
+                self.screen.draw_text("Relocate between "+lastCrossing+ " and "+nextCrossing+" in " + str(8-x)+"s")
             elif lastCrossing == None:
-                self.screen.draw_text("Place Zumi at    Start in "+ str(15-x) + "s")
+                self.screen.draw_text("Place Zumi at    Start in "+ str(8-x) + "s")
             self.time.sleep(1.0)
             
         self.screen.clear_display()
